@@ -72,6 +72,45 @@ import org.springframework.web.method.HandlerMethod;
  * @see org.springframework.web.servlet.i18n.LocaleChangeInterceptor
  * @see org.springframework.web.servlet.theme.ThemeChangeInterceptor
  * @see javax.servlet.Filter
+ * 拦截器配置
+ * 1.<mvc:interceptors /> 标签
+ * <mvc:interceptors>
+ *     <mvc:interceptor>
+ *         <mvc:mapping path="/interceptor/**" />
+ *         <mvc:exclude-mapping path="/interceptor/b/*" />
+ *         <bean class="com.elim.learn.spring.mvc.interceptor.MyInterceptor" />
+ *     </mvc:interceptor>
+ * </mvc:interceptors>
+ * 1)每一个 <mvc:interceptor /> 标签，
+ * 会被 ${@link org.springframework.web.servlet.config.InterceptorsBeanDefinitionParser}
+ * 解析成 「4.1 MappedInterceptor」 对象，注册到 Spring IOC 容器中
+ * 2)在 AbstractHandlerMapping 的 #detectMappedInterceptors(List<HandlerInterceptor> mappedInterceptors) 方法中，
+ * 会扫描 MappedInterceptor Bean
+ * 2. Java Config
+ * @Component
+ * public class SecurityInterceptor extends HandlerInterceptorAdapter {
+ *
+ *     // ... 省略无关代码
+ *
+ * }
+ * @EnableWebMvc
+ * @Configuration
+ * public class MVCConfiguration extends WebMvcConfigurerAdapter {
+ *
+ *     @Autowired
+ *     private SecurityInterceptor securityInterceptor;
+ *
+ *     @Override
+ *     public void addInterceptors(InterceptorRegistry registry) {
+ *         registry.addInterceptor(securityInterceptor);
+ *     }
+ *
+ * }
+ * 1) SecurityInterceptor 是拦截器，通过 @Component 注册到 Spring IOC 容器中。
+ * 因为它是 HandlerInterceptorAdapter 的子类，而不是 MappedInterceptor 的子类，
+ * 所以不会被 AbstractHandlerMapping 的 #detectMappedInterceptors(List<HandlerInterceptor> mappedInterceptors) 方法扫描到。
+ * 2) 在 MVCConfiguration 的 #addInterceptors(InterceptorRegistry registry) 方法中，
+ * 我们将 securityInterceptor 拦截器添加到 InterceptorRegistry 这个拦截器注册表中。
  */
 public interface HandlerInterceptor {
 
@@ -93,6 +132,9 @@ public interface HandlerInterceptor {
 	 * next interceptor or the handler itself. Else, DispatcherServlet assumes
 	 * that this interceptor has already dealt with the response itself.
 	 * @throws Exception in case of errors
+	 */
+	/**
+	 * 拦截处理器，在 {@link HandlerAdapter#handle(HttpServletRequest, HttpServletResponse, Object)} 执行之前
 	 */
 	default boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
@@ -120,6 +162,10 @@ public interface HandlerInterceptor {
 	 * (can also be {@code null})
 	 * @throws Exception in case of errors
 	 */
+	/**
+	 * 拦截处理器，在 {@link HandlerAdapter#handle(HttpServletRequest, HttpServletResponse, Object)} 执行成功之后
+	 * 以执行链的相反顺序应用
+	 */
 	default void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			@Nullable ModelAndView modelAndView) throws Exception {
 	}
@@ -143,6 +189,11 @@ public interface HandlerInterceptor {
 	 * execution, for type and/or instance examination
 	 * @param ex exception thrown on handler execution, if any
 	 * @throws Exception in case of errors
+	 */
+	/**
+	 * 拦截处理器，在 {@link HandlerAdapter} 执行完之后，无论成功还是失败
+	 * 以执行链的相反顺序应用
+	 * 并且，只有 {@link #preHandle(HttpServletRequest, HttpServletResponse, Object)} 执行成功之后，才会被执行
 	 */
 	default void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
 			@Nullable Exception ex) throws Exception {

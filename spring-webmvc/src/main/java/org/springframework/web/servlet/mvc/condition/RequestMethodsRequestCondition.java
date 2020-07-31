@@ -104,7 +104,9 @@ public final class RequestMethodsRequestCondition extends AbstractRequestConditi
 		if (CorsUtils.isPreFlightRequest(request)) {
 			return matchPreFlight(request);
 		}
-
+		// 空的情况下，就返回自身
+		//* 也就是说，没有 **RequestMethod** 的条件，一定匹配成功，
+		// 且结果就是自身 RequestMethodsRequestCondition 对象。
 		if (getMethods().isEmpty()) {
 			if (RequestMethod.OPTIONS.name().equals(request.getMethod()) &&
 					!DispatcherType.ERROR.equals(request.getDispatcherType())) {
@@ -113,7 +115,7 @@ public final class RequestMethodsRequestCondition extends AbstractRequestConditi
 			}
 			return this;
 		}
-
+		// 非空，逐个匹配
 		return matchRequestMethod(request.getMethod());
 	}
 

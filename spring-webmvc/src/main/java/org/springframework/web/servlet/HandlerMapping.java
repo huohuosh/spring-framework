@@ -52,6 +52,7 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.web.servlet.handler.AbstractHandlerMapping
  * @see org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping
  * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+ * 处理器匹配接口，根据请求( handler )获得其的处理器( handler )和拦截器们( HandlerInterceptor 数组 )
  */
 public interface HandlerMapping {
 
@@ -70,6 +71,7 @@ public interface HandlerMapping {
 	 * HandlerMapping implementations. URL-based HandlerMappings will
 	 * typically support it, but handlers should not necessarily expect
 	 * this request attribute to be present in all scenarios.
+	 * 这个常量会被放到request的属性中，用来设置SpringMVC用的URI地址
 	 */
 	String PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE = HandlerMapping.class.getName() + ".pathWithinHandlerMapping";
 
@@ -80,6 +82,7 @@ public interface HandlerMapping {
 	 * HandlerMapping implementations. URL-based HandlerMappings will
 	 * typically support it, but handlers should not necessarily expect
 	 * this request attribute to be present in all scenarios.
+	 * 这个常量会被放到request的属性中，用来设置匹配到的最合适的URI
 	 */
 	String BEST_MATCHING_PATTERN_ATTRIBUTE = HandlerMapping.class.getName() + ".bestMatchingPattern";
 
@@ -88,6 +91,7 @@ public interface HandlerMapping {
 	 * whether type-level mappings should be inspected.
 	 * <p>Note: This attribute is not required to be supported by all
 	 * HandlerMapping implementations.
+	 * 这个常量目前来说没用
 	 */
 	String INTROSPECT_TYPE_LEVEL_MAPPING = HandlerMapping.class.getName() + ".introspectTypeLevelMapping";
 
@@ -98,6 +102,7 @@ public interface HandlerMapping {
 	 * HandlerMapping implementations. URL-based HandlerMappings will
 	 * typically support it, but handlers should not necessarily expect
 	 * this request attribute to be present in all scenarios.
+	 * 这个常量会被放到request的属性中，用于存放临时变量，在使用restfull风格的uri时会用到
 	 */
 	String URI_TEMPLATE_VARIABLES_ATTRIBUTE = HandlerMapping.class.getName() + ".uriTemplateVariables";
 
@@ -108,6 +113,8 @@ public interface HandlerMapping {
 	 * <p>Note: This attribute is not required to be supported by all
 	 * HandlerMapping implementations and may also not be present depending on
 	 * whether the HandlerMapping is configured to keep matrix variable content
+	 * URI标准中有一种参数叫做矩阵参数，例如aaa/bbb;a=1;b=c。
+	 * 这个常量会被放到request的属性中，当有矩阵参数时，矩阵参数的解析结果将放到这里。
 	 */
 	String MATRIX_VARIABLES_ATTRIBUTE = HandlerMapping.class.getName() + ".matrixVariables";
 
@@ -117,6 +124,7 @@ public interface HandlerMapping {
 	 * <p>Note: This attribute is not required to be supported by all
 	 * HandlerMapping implementations. Handlers should not necessarily expect
 	 * this request attribute to be present in all scenarios.
+	 * 这个常量会被放到request的属性中，会将映射上的处理器能产生的media type类型放到这里
 	 */
 	String PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE = HandlerMapping.class.getName() + ".producibleMediaTypes";
 
@@ -134,6 +142,9 @@ public interface HandlerMapping {
 	 * @return a HandlerExecutionChain instance containing handler object and
 	 * any interceptors, or {@code null} if no mapping found
 	 * @throws Exception if there is an internal error
+	 */
+	/**
+	 * 获得请求对应的处理器和拦截器们
 	 */
 	@Nullable
 	HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception;

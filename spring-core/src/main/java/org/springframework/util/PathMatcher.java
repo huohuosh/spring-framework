@@ -43,6 +43,7 @@ public interface PathMatcher {
 	 * on the static path Strings will lead to the same result.
 	 * @param path the path String to check
 	 * @return {@code true} if the given {@code path} represents a pattern
+	 * 判断传入的path是否可以作为pattern使用
 	 */
 	boolean isPattern(String path);
 
@@ -53,6 +54,7 @@ public interface PathMatcher {
 	 * @param path the path String to test
 	 * @return {@code true} if the supplied {@code path} matched,
 	 * {@code false} if it didn't
+	 * 使用pattern匹配path
 	 */
 	boolean match(String pattern, String path);
 
@@ -65,6 +67,7 @@ public interface PathMatcher {
 	 * @param path the path String to test
 	 * @return {@code true} if the supplied {@code path} matched,
 	 * {@code false} if it didn't
+	 * 如名,是否开始部分匹配
 	 */
 	boolean matchStart(String pattern, String path);
 
@@ -87,6 +90,7 @@ public interface PathMatcher {
 	 * @param path the full path to introspect
 	 * @return the pattern-mapped part of the given {@code path}
 	 * (never {@code null})
+	 * 提取path中匹配到的部分,如pattern(myroot/*.html),path(myroot/myfile.html),返回myfile.html
 	 */
 	String extractPathWithinPattern(String pattern, String path);
 
@@ -98,6 +102,8 @@ public interface PathMatcher {
 	 * @param pattern the path pattern, possibly containing URI templates
 	 * @param path the full path to extract template variables from
 	 * @return a map, containing variable names as keys; variables values as values
+	 * 提取path中匹配到的部分,只是这边还需跟占位符配对为map,
+	 * 如pattern(/hotels/{hotel}),path(/hotels/1),解析出"hotel"->"1"
 	 */
 	Map<String, String> extractUriTemplateVariables(String pattern, String path);
 
@@ -110,6 +116,7 @@ public interface PathMatcher {
 	 * a list so that more specific patterns come before generic patterns.
 	 * @param path the full path to use for comparison
 	 * @return a comparator capable of sorting patterns in order of explicitness
+	 * 提供比较器
 	 */
 	Comparator<String> getPatternComparator(String path);
 
@@ -120,6 +127,7 @@ public interface PathMatcher {
 	 * @param pattern2 the second pattern
 	 * @return the combination of the two patterns
 	 * @throws IllegalArgumentException when the two patterns cannot be combined
+	 * 合并pattern,pattern1然后pattern2
 	 */
 	String combine(String pattern1, String pattern2);
 

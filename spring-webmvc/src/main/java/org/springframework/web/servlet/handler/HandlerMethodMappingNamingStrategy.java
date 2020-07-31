@@ -46,6 +46,7 @@ public interface HandlerMethodMappingNamingStrategy<T> {
 	 * @param handlerMethod the handler method
 	 * @param mapping the mapping
 	 * @return the name
+	 * 获得名字
 	 */
 	String getName(HandlerMethod handlerMethod, T mapping);
 

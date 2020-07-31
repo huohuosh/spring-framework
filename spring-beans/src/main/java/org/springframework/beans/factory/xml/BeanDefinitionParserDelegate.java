@@ -127,15 +127,30 @@ public class BeanDefinitionParserDelegate {
 	public static final String SCOPE_ATTRIBUTE = "scope";
 
 	private static final String SINGLETON_ATTRIBUTE = "singleton";
-
+	/**
+	 * 默认情况下，ApplicationContext会在容器创建时初始化所有托管的bean，
+	 * 我们可以通过lazy-init元素来开启懒惰初始化，使bean在被使用时才执行初始化
+	 * 懒惰初始化可能会因为depends-on而失效
+	 */
 	public static final String LAZY_INIT_ATTRIBUTE = "lazy-init";
-
+	/**
+	 * 自动装配 {@link org.springframework.beans.factory.annotation.Autowire}
+	 */
 	public static final String AUTOWIRE_ATTRIBUTE = "autowire";
-
+	/**
+	 * 当模式为byType，并且同时存在两个相同类型的bean时，可以通过
+	 * <bean autowire-candidate="false">来排除不需要的bean
+	 */
 	public static final String AUTOWIRE_CANDIDATE_ATTRIBUTE = "autowire-candidate";
-
+	/**
+	 * 当模式为byType，并且同时存在两个相同类型的bean时，可以通过
+	 * primary="true"设置装配的优先级来指定优先使用哪个bean
+	 */
 	public static final String PRIMARY_ATTRIBUTE = "primary";
-
+	/**
+	 * 当一个Bean依赖于另一个Bean，可以使用depends-on来指定初始化顺序
+	 * 若依赖多个bean，则可以使用逗号、分号或空格来分隔
+	 */
 	public static final String DEPENDS_ON_ATTRIBUTE = "depends-on";
 
 	public static final String INIT_METHOD_ATTRIBUTE = "init-method";
@@ -173,7 +188,11 @@ public class BeanDefinitionParserDelegate {
 	public static final String ARG_TYPE_MATCH_ATTRIBUTE = "match";
 
 	public static final String REF_ELEMENT = "ref";
-
+	/**
+	 * idref的作用基本与value一致，不同点是，
+	 * idref元素允许容器在部署时验证引用的bean命名是否真实存在，
+	 * 因此在实际项目使用时，可以优先考虑使用idref
+	 */
 	public static final String IDREF_ELEMENT = "idref";
 
 	public static final String BEAN_REF_ATTRIBUTE = "bean";
@@ -211,13 +230,25 @@ public class BeanDefinitionParserDelegate {
 	public static final String QUALIFIER_ELEMENT = "qualifier";
 
 	public static final String QUALIFIER_ATTRIBUTE_ELEMENT = "attribute";
-
+	/**
+	 * 控制容器级别的延迟初始化
+	 */
 	public static final String DEFAULT_LAZY_INIT_ATTRIBUTE = "default-lazy-init";
 
 	public static final String DEFAULT_MERGE_ATTRIBUTE = "default-merge";
-
+	/**
+	 * 容器级别自动装配
+	 * 自动装配有四种模式
+	 * no：默认，无自动装配，Bean引用必须由ref元素指定
+	 * byName：根据属性名称装配bean，spring查找与需要自动装配的属性名相同的bean
+	 * byType：如果容器中只存在一个属性类型的bean，则允许属性自动装配。如果存在多个，则会抛出异常
+	 * constructor：适用于构造函数，如果容器中没有构造函数参数类型的一个bean，则会抛出异常。
+	 */
 	public static final String DEFAULT_AUTOWIRE_ATTRIBUTE = "default-autowire";
-
+	/**
+	 * 容器级别用于定义哪些bean可以作为候选者，default-autowire-candidates的值是个通配符
+	 * 如 default-autowire-candidates="*Service"
+	 */
 	public static final String DEFAULT_AUTOWIRE_CANDIDATES_ATTRIBUTE = "default-autowire-candidates";
 
 	public static final String DEFAULT_INIT_METHOD_ATTRIBUTE = "default-init-method";
@@ -584,11 +615,17 @@ public class BeanDefinitionParserDelegate {
 			String dependsOn = ele.getAttribute(DEPENDS_ON_ATTRIBUTE);
 			bd.setDependsOn(StringUtils.tokenizeToStringArray(dependsOn, MULTI_VALUE_ATTRIBUTE_DELIMITERS));
 		}
-
+		//获取bean元素的autowire-candidate元素，autowire-candidate如果不设置，其值就是default
 		String autowireCandidate = ele.getAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE);
+		//判断bean元素的autowire-candidate元素是否等于"default"或者是否等于""
 		if (isDefaultValue(autowireCandidate)) {
+			//获取beans元素default-autowire-candidates属性值
 			String candidatePattern = this.defaults.getAutowireCandidates();
+			//判断获取beans元素default-autowire-candidates属性值是否为空
+			// default-autowire-candidates默认值就是null
 			if (candidatePattern != null) {
+				//判断bean的名称是否和default-autowire-candidates的值匹配
+				// 如果匹配就将bean的autowireCandidate置为true，否则置为false
 				String[] patterns = StringUtils.commaDelimitedListToStringArray(candidatePattern);
 				bd.setAutowireCandidate(PatternMatchUtils.simpleMatch(patterns, beanName));
 			}

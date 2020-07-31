@@ -47,6 +47,10 @@ import org.springframework.web.servlet.HandlerExecutionChain;
  * <p>Will search all path patterns to find the most exact match for the
  * current request path. The most exact match is defined as the longest
  * path pattern that matches the current request path.
+ * 保存URI和handler的对应关系，在父类调用重写的 getHandlerInternal 方法时，
+ * 通过request中的URI查找最合适的handler
+ * 那URI和handler关系从哪来？当然是通过注册得来的。
+ * AbstractUrlHandlerMapping 应该是允许子类在初始化时，调用 registerHandler 方法来注册handler。
  *
  * @author Juergen Hoeller
  * @author Arjen Poutsma

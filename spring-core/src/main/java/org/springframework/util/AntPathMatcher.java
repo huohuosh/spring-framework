@@ -69,6 +69,17 @@ import org.springframework.lang.Nullable;
  * @author Rossen Stoyanchev
  * @author Sam Brannen
  * @since 16.07.2003
+ * 规则
+ * ? 一个字符匹配
+ * *匹配零个或多个字符
+ * **匹配0个及以上目录directories
+ * {spring:[az]+}的匹配正则表达式[a-z]+,并将其作为名为“spring”的路径变量
+ *
+ * com/t?st.jsp -             				 匹配: com/test.jsp  ,  com/tast.jsp  ,  com/txst.jsp
+ * com/*.jsp -              				 匹配: com文件夹下的全部.jsp文件
+ * com/&#42;&#42;/test.jsp -				 匹配:com文件夹和子文件夹下的全部.jsp文件,
+ * org/springframework/&#42;&#42;/*.jsp -    匹配:org/springframework文件夹和子文件夹下的全部.jsp文件
+ * org/&#42;&#42;/servlet/bla.jsp -       	 匹配:org/springframework/servlet/bla.jsp,org/springframework/testing/servlet/bla.jsp,org/servlet/bla.jsp
  */
 public class AntPathMatcher implements PathMatcher {
 

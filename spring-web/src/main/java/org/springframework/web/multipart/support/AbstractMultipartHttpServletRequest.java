@@ -137,6 +137,7 @@ public abstract class AbstractMultipartHttpServletRequest extends HttpServletReq
 	 * @see #initializeMultipart()
 	 */
 	protected MultiValueMap<String, MultipartFile> getMultipartFiles() {
+		// 如果未初始化，则进行初始化
 		if (this.multipartFiles == null) {
 			initializeMultipart();
 		}

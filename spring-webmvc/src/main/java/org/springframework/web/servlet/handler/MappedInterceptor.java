@@ -36,6 +36,7 @@ import org.springframework.web.servlet.ModelAndView;
  * Furthermore, beans of type {@code MappedInterceptor} are automatically detected by
  * {@code AbstractHandlerMethodMapping} (including ancestor ApplicationContext's) which
  * effectively means the interceptor is registered "globally" with all handler mappings.
+ * 实现 HandlerInterceptor 接口，支持地址匹配的 HandlerInterceptor 实现类。
  *
  * @author Keith Donald
  * @author Rossen Stoyanchev
@@ -44,14 +45,21 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public final class MappedInterceptor implements HandlerInterceptor {
 
+	/**
+	 * 匹配的路径
+	 */
 	@Nullable
 	private final String[] includePatterns;
-
+	/**
+	 * 不匹配的路径
+	 */
 	@Nullable
 	private final String[] excludePatterns;
 
 	private final HandlerInterceptor interceptor;
-
+	/**
+	 * 路径匹配器
+	 */
 	@Nullable
 	private PathMatcher pathMatcher;
 
@@ -142,9 +150,11 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	 * @param lookupPath the current request path
 	 * @param pathMatcher a path matcher for path pattern matching
 	 * @return {@code true} if the interceptor applies to the given request path
+	 * 判断路径是否匹配
 	 */
 	public boolean matches(String lookupPath, PathMatcher pathMatcher) {
 		PathMatcher pathMatcherToUse = (this.pathMatcher != null ? this.pathMatcher : pathMatcher);
+		// 先排重
 		if (!ObjectUtils.isEmpty(this.excludePatterns)) {
 			for (String pattern : this.excludePatterns) {
 				if (pathMatcherToUse.match(pattern, lookupPath)) {
@@ -152,9 +162,11 @@ public final class MappedInterceptor implements HandlerInterceptor {
 				}
 			}
 		}
+		// 特殊，如果包含为空，则默认就是包含
 		if (ObjectUtils.isEmpty(this.includePatterns)) {
 			return true;
 		}
+		// 后包含
 		for (String pattern : this.includePatterns) {
 			if (pathMatcherToUse.match(pattern, lookupPath)) {
 				return true;
