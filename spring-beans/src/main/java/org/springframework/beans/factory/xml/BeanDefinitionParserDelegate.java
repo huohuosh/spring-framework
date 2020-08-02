@@ -152,13 +152,21 @@ public class BeanDefinitionParserDelegate {
 	 * 若依赖多个bean，则可以使用逗号、分号或空格来分隔
 	 */
 	public static final String DEPENDS_ON_ATTRIBUTE = "depends-on";
-
+	/**
+	 * bean的初始化方法
+	 */
 	public static final String INIT_METHOD_ATTRIBUTE = "init-method";
-
+	/**
+	 * bean的的销毁方法
+	 */
 	public static final String DESTROY_METHOD_ATTRIBUTE = "destroy-method";
-
+	/**
+	 * 用于调用工厂类方法（非静态方法：必须实例化工厂类（factory-bean）后才能调用工厂方法）
+	 */
 	public static final String FACTORY_METHOD_ATTRIBUTE = "factory-method";
-
+	/**
+	 * 用于实例化工厂类
+	 */
 	public static final String FACTORY_BEAN_ATTRIBUTE = "factory-bean";
 
 	public static final String CONSTRUCTOR_ARG_ELEMENT = "constructor-arg";
@@ -250,9 +258,13 @@ public class BeanDefinitionParserDelegate {
 	 * 如 default-autowire-candidates="*Service"
 	 */
 	public static final String DEFAULT_AUTOWIRE_CANDIDATES_ATTRIBUTE = "default-autowire-candidates";
-
+	/**
+	 * 设置所有bean的默认的初始化方法（如果bean有对应的方法则会执行）
+	 */
 	public static final String DEFAULT_INIT_METHOD_ATTRIBUTE = "default-init-method";
-
+	/**
+	 * 设置所有bean的默认的销毁方法（如果bean有对应的方法则会执行）
+	 */
 	public static final String DEFAULT_DESTROY_METHOD_ATTRIBUTE = "default-destroy-method";
 
 
