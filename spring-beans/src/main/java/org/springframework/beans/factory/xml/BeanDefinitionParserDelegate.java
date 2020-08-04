@@ -184,15 +184,53 @@ public class BeanDefinitionParserDelegate {
 	public static final String REF_ATTRIBUTE = "ref";
 
 	public static final String VALUE_ATTRIBUTE = "value";
-
+	/**
+	 *  <lookup-method name="createCommand" bean="command"/>
+	 * lookup method注入是spring动态改变bean里方法的实现。
+	 * 元素 lookup-method 会 override 覆盖指定名称的所有同名方法
+	 * 方法执行返回的对象，使用spring内原有的这类对象替换，通过改变方法返回值来动态改变方法
+	 * 内部实现为使用cglib方法，重新生成子类，重写配置的方法和返回对象，达到动态改变的效果。
+	 * 注意：由于采用cglib生成之类的方式，所以需要用来动态注入的类，不能是final修饰的；需要动态注入的方法，也不能是final修饰的
+	 *
+	 * 还得注意返回Bean的scope的配置，
+	 * 如果scope配置为singleton，则每次调用方法，返回的对象都是相同的；
+	 * 如果scope配置为prototype，则每次调用，返回都不同
+	 *
+	 * 可以使用 元素 lookup-method 来取代 ApplicationContextAware 接口，
+	 * 避免应用代码直接和和 Spring 代码耦合在一起
+	 */
 	public static final String LOOKUP_METHOD_ELEMENT = "lookup-method";
-
+	/**
+	 * 1.当元素 lookup-method 和 replaced-method 一起使用时，元素 lookup-method 的优先级更高，
+	 * 会覆盖元素 replaced-method。所以应当避免同时使用这两个元素来配置同一个 method。
+	 * 2.元素 replaced-method 可以实现元素 lookup-method 的功能，但是它更强大，
+	 * 接口 {@link org.springframework.beans.factory.support.MethodReplacer} 和该元素配合使用。
+	 * 3.元素 replaced-method 可以使用其子元素 arg-type 来指定参数类型（字符串，例如类的 FQN），
+	 * 如果没有指定任何 arg-type 元素，则表示该方法无参。
+	 * 4.元素 lookup-method 可以悄无声息的覆盖掉某个 bean 的某个 method。
+	 * 而元素 replaced-method 则可以提供更精细的控制，对于应该选取指定名称的哪个方法（即 多个重载方法的场景）。
+	 * @see org.springframework.beans.factory.annotation.Lookup
+	 *
+	 * 需实现{@link org.springframework.beans.factory.support.MethodReplacer} 接口
+	 * name 为要替换的方法
+	 * replacer 为实现 MethodReplacer 的类
+	 * <replaced-method name="computeValue" replacer="replacementComputeValue">
+	 * 		<arg-type>String</arg-type>
+	 * 		<arg-type match="java.lang.String"></arg-type>
+	 * </replaced-method>
+	 */
 	public static final String REPLACED_METHOD_ELEMENT = "replaced-method";
-
+	/**
+	 * 元素 replaced-method 被替换方法的实现对于的 bean
+	 */
 	public static final String REPLACER_ATTRIBUTE = "replacer";
-
+	/**
+	 * replaced-method 参数类型
+	 */
 	public static final String ARG_TYPE_ELEMENT = "arg-type";
-
+	/**
+	 * replaced-method 参数类型具体类型信息
+	 */
 	public static final String ARG_TYPE_MATCH_ATTRIBUTE = "match";
 
 	public static final String REF_ELEMENT = "ref";
