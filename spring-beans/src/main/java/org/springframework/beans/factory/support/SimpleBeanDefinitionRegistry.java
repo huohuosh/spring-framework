@@ -30,7 +30,9 @@ import org.springframework.util.StringUtils;
  * Simple implementation of the {@link BeanDefinitionRegistry} interface.
  * Provides registry capabilities only, with no factory capabilities built in.
  * Can for example be used for testing bean definition readers.
- * BeanDefinitionRegistry的简单实现
+ * SimpleBeanDefinitionRegistry 为BeanDefinitionRegistry的默认实现，
+ * 同时继承AliasRegistry的默认实现SimpleAliasRegistry，
+ * 所以它总共维护了两个注册表aliasMap（别名注册表）与beanDefinitionMap（bean描述注册表）
  *
  * @author Juergen Hoeller
  * @since 2.5.2
@@ -38,9 +40,15 @@ import org.springframework.util.StringUtils;
 public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements BeanDefinitionRegistry {
 
 	/** Map of bean definition objects, keyed by bean name. */
+	// name-BeanDefinition 映射关系表，ConcurrentHashMap实现的内存注册表，用于存储BeanDefinition
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(64);
 
-
+	/**
+	 * 注册表中注册 name-BeanDefinition
+	 * @param beanName the name of the bean instance to register
+	 * @param beanDefinition definition of the bean instance to register
+	 * @throws BeanDefinitionStoreException
+	 */
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -50,6 +58,11 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		this.beanDefinitionMap.put(beanName, beanDefinition);
 	}
 
+	/**
+	 * 移除注册表中的name-BeanDefinition
+	 * @param beanName the name of the bean instance to register
+	 * @throws NoSuchBeanDefinitionException
+	 */
 	@Override
 	public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
 		if (this.beanDefinitionMap.remove(beanName) == null) {
@@ -57,6 +70,12 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		}
 	}
 
+	/**
+	 * 获取注册表中的name-BeanDefinition
+	 * @param beanName name of the bean to find a definition for
+	 * @return
+	 * @throws NoSuchBeanDefinitionException
+	 */
 	@Override
 	public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
 		BeanDefinition bd = this.beanDefinitionMap.get(beanName);
@@ -66,21 +85,39 @@ public class SimpleBeanDefinitionRegistry extends SimpleAliasRegistry implements
 		return bd;
 	}
 
+	/**
+	 * 判断注册表中是否包含beanName的key
+	 * @param beanName the name of the bean to look for
+	 * @return
+	 */
 	@Override
 	public boolean containsBeanDefinition(String beanName) {
 		return this.beanDefinitionMap.containsKey(beanName);
 	}
 
+	/**
+	 * 获取注册表beanName集合
+	 * @return
+	 */
 	@Override
 	public String[] getBeanDefinitionNames() {
 		return StringUtils.toStringArray(this.beanDefinitionMap.keySet());
 	}
 
+	/**
+	 * 获取注册表大小
+	 * @return
+	 */
 	@Override
 	public int getBeanDefinitionCount() {
 		return this.beanDefinitionMap.size();
 	}
 
+	/**
+	 * 判断beanName是否被使用，在BeanDefinition注册表中获取别名注册表中
+	 * @param beanName the name to check
+	 * @return
+	 */
 	@Override
 	public boolean isBeanNameInUse(String beanName) {
 		return isAlias(beanName) || containsBeanDefinition(beanName);
