@@ -46,16 +46,21 @@ public abstract class RequestContextHolder  {
 
 	private static final boolean jsfPresent =
 			ClassUtils.isPresent("javax.faces.context.FacesContext", RequestContextHolder.class.getClassLoader());
-
+	/**
+	 * 得到存储进去的request属性
+	 */
 	private static final ThreadLocal<RequestAttributes> requestAttributesHolder =
 			new NamedThreadLocal<>("Request attributes");
-
+	/**
+	 * 可被子线程继承的request属性
+	 */
 	private static final ThreadLocal<RequestAttributes> inheritableRequestAttributesHolder =
 			new NamedInheritableThreadLocal<>("Request context");
 
 
 	/**
 	 * Reset the RequestAttributes for the current thread.
+	 * 重置属性
 	 */
 	public static void resetRequestAttributes() {
 		requestAttributesHolder.remove();
@@ -67,6 +72,7 @@ public abstract class RequestContextHolder  {
 	 * <i>not</i> exposing it as inheritable for child threads.
 	 * @param attributes the RequestAttributes to expose
 	 * @see #setRequestAttributes(RequestAttributes, boolean)
+	 * 设置属性（不考虑子线程）
 	 */
 	public static void setRequestAttributes(@Nullable RequestAttributes attributes) {
 		setRequestAttributes(attributes, false);
@@ -78,6 +84,7 @@ public abstract class RequestContextHolder  {
 	 * or {@code null} to reset the thread-bound context
 	 * @param inheritable whether to expose the RequestAttributes as inheritable
 	 * for child threads (using an {@link InheritableThreadLocal})
+	 * 设置属性
 	 */
 	public static void setRequestAttributes(@Nullable RequestAttributes attributes, boolean inheritable) {
 		if (attributes == null) {
@@ -99,6 +106,7 @@ public abstract class RequestContextHolder  {
 	 * Return the RequestAttributes currently bound to the thread.
 	 * @return the RequestAttributes currently bound to the thread,
 	 * or {@code null} if none bound
+	 * 获取属性
 	 */
 	@Nullable
 	public static RequestAttributes getRequestAttributes() {
@@ -120,6 +128,8 @@ public abstract class RequestContextHolder  {
 	 * @see ServletRequestAttributes
 	 * @see FacesRequestAttributes
 	 * @see javax.faces.context.FacesContext#getCurrentInstance()
+	 * 返回绑定到当前线程的RequestAttributes
+	 * 如果为空，且存在当前facesContext返回封装facesContext的RequestAttributes
 	 */
 	public static RequestAttributes currentRequestAttributes() throws IllegalStateException {
 		RequestAttributes attributes = getRequestAttributes();

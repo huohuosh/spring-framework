@@ -56,6 +56,7 @@ public interface Resource extends InputStreamSource {
 	 * <p>This method performs a definitive existence check, whereas the
 	 * existence of a {@code Resource} handle only guarantees a valid
 	 * descriptor handle.
+	 * 返回boolean以标记资源是否以物理形式存在
 	 */
 	boolean exists();
 
@@ -172,6 +173,7 @@ public interface Resource extends InputStreamSource {
 	 * <p>Implementations are also encouraged to return this value
 	 * from their {@code toString} method.
 	 * @see Object#toString()
+	 * 返回资源的描述，用语处理资源错误的时候的输出
 	 */
 	String getDescription();
 

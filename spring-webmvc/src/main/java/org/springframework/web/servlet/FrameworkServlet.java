@@ -1070,7 +1070,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		// <5> TODO
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 		asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
-		// <6> TODO
+		// <6> 设置 LocaleContextHolder、RequestContextHolder
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
