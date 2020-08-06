@@ -53,6 +53,17 @@ import org.springframework.util.CollectionUtils;
  * @see #setMappings
  * @see #setUrlMap
  * @see BeanNameUrlHandlerMapping
+ * 只要你在xml配置文件中配置了这个bean，然后给它的 urlMap 属性中设置映射，
+ * 如果映射的Key忘记带/了，他会帮你自动补上，映射的Value可以是ref引用bean，也可以是bean的name
+ * <bean id="simpleController" class="com.test.simple.controller.SimpleController"/>
+ * <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+ *      <property name="urlMap">
+ *          <map>
+ *              <entry key="/simple" value-ref="simpleController"/>
+ *          </map>
+ *     </property>
+ *     <property name="order" value="0"/>
+ * </bean>
  */
 public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 

@@ -253,6 +253,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @since 5.1
 	 * @see #isHandler
 	 * @see #detectHandlerMethods
+	 * 判断 Bean 是否为处理器，如果是，则扫描处理器方法
 	 */
 	protected void processCandidateBean(String beanName) {
 		// <1> 获得 Bean 对应的类型
@@ -276,6 +277,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * Look for handler methods in the specified handler bean.
 	 * @param handler either a bean name or an actual handler instance
 	 * @see #getMappingForMethod
+	 * 扫描处理器的方法们
 	 */
 	protected void detectHandlerMethods(Object handler) {
 		// <1> 获得处理器类型
