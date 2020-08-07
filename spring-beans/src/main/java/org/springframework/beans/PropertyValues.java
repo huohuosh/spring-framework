@@ -82,6 +82,7 @@ public interface PropertyValues extends Iterable<PropertyValue> {
 	 * @return the updated or new properties.
 	 * Return empty PropertyValues if there are no changes.
 	 * @see Object#equals
+	 * 获取当前对象和old不一样的属性
 	 */
 	PropertyValues changesSince(PropertyValues old);
 

@@ -43,6 +43,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * Scope identifier for the standard singleton scope: "singleton".
 	 * <p>Note that extended bean factories might support further scopes.
 	 * @see #setScope
+	 * 默认只提供 singleton 和 prototype 两种
+	 * request, session, globalSession, application, websocket 这几种属于基于 web 的扩展
 	 */
 	String SCOPE_SINGLETON = ConfigurableBeanFactory.SCOPE_SINGLETON;
 
@@ -50,6 +52,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * Scope identifier for the standard prototype scope: "prototype".
 	 * <p>Note that extended bean factories might support further scopes.
 	 * @see #setScope
+	 * 默认只提供 singleton 和 prototype 两种
 	 */
 	String SCOPE_PROTOTYPE = ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
@@ -84,11 +87,14 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
 	/**
 	 * Set the name of the parent definition of this bean definition, if any.
+	 * 设置父 Bean，这里涉及到 bean 继承，不是 java 继承。请参见附录的详细介绍
+	 * 一句话就是：继承父 Bean 的配置信息而已
 	 */
 	void setParentName(@Nullable String parentName);
 
 	/**
 	 * Return the name of the parent definition of this bean definition, if any.
+	 * 获取父Bean定义名称
 	 */
 	@Nullable
 	String getParentName();
@@ -100,6 +106,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * @see #setParentName
 	 * @see #setFactoryBeanName
 	 * @see #setFactoryMethodName
+	 * 设置 Bean 的类名称，将来是要通过反射来生成实例的
 	 */
 	void setBeanClassName(@Nullable String beanClassName);
 
@@ -114,6 +121,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * @see #getParentName()
 	 * @see #getFactoryBeanName()
 	 * @see #getFactoryMethodName()
+	 * 获取 Bean 的类名称
 	 */
 	@Nullable
 	String getBeanClassName();
@@ -122,6 +130,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * Override the target scope of this bean, specifying a new scope name.
 	 * @see #SCOPE_SINGLETON
 	 * @see #SCOPE_PROTOTYPE
+	 * 设置 bean 的 scope
 	 */
 	void setScope(@Nullable String scope);
 
@@ -136,6 +145,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * Set whether this bean should be lazily initialized.
 	 * <p>If {@code false}, the bean will get instantiated on startup by bean
 	 * factories that perform eager initialization of singletons.
+	 * 设置是否懒加载
 	 */
 	void setLazyInit(boolean lazyInit);
 

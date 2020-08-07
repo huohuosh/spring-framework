@@ -45,7 +45,10 @@ import org.springframework.util.StringUtils;
 public class MutablePropertyValues implements PropertyValues, Serializable {
 
 	private final List<PropertyValue> propertyValueList;
-
+	/**
+	 * 已经解析过的 PropertyValue
+	 * TODO 001
+	 */
 	@Nullable
 	private Set<String> processedProperties;
 
@@ -56,6 +59,7 @@ public class MutablePropertyValues implements PropertyValues, Serializable {
 	 * Creates a new empty MutablePropertyValues object.
 	 * <p>Property values can be added with the {@code add} method.
 	 * @see #add(String, Object)
+	 * 无参构造函数，初始化list
 	 */
 	public MutablePropertyValues() {
 		this.propertyValueList = new ArrayList<>(0);
@@ -67,6 +71,7 @@ public class MutablePropertyValues implements PropertyValues, Serializable {
 	 * referenced by individual PropertyValue objects.
 	 * @param original the PropertyValues to copy
 	 * @see #addPropertyValues(PropertyValues)
+	 * 复制传入的PropertyValues
 	 */
 	public MutablePropertyValues(@Nullable PropertyValues original) {
 		// We can optimize this because it's all new:
@@ -87,6 +92,7 @@ public class MutablePropertyValues implements PropertyValues, Serializable {
 	 * Construct a new MutablePropertyValues object from a Map.
 	 * @param original a Map with property values keyed by property name Strings
 	 * @see #addPropertyValues(Map)
+	 * 可传入map作为构造函数参数
 	 */
 	public MutablePropertyValues(@Nullable Map<?, ?> original) {
 		// We can optimize this because it's all new:
@@ -107,6 +113,7 @@ public class MutablePropertyValues implements PropertyValues, Serializable {
 	 * <p>This is a constructor for advanced usage scenarios.
 	 * It is not intended for typical programmatic use.
 	 * @param propertyValueList a List of PropertyValue objects
+	 * 可传入list作为构造函数参数
 	 */
 	public MutablePropertyValues(@Nullable List<PropertyValue> propertyValueList) {
 		this.propertyValueList =
@@ -167,6 +174,8 @@ public class MutablePropertyValues implements PropertyValues, Serializable {
 	 * corresponding property or getting merged with it (if applicable).
 	 * @param pv the PropertyValue object to add
 	 * @return this in order to allow for adding multiple property values in a chain
+	 * 添加PropertyValue，
+	 * 如果存在替换或合并（实现{@link Mergeable} 接口并可合并）
 	 */
 	public MutablePropertyValues addPropertyValue(PropertyValue pv) {
 		for (int i = 0; i < this.propertyValueList.size(); i++) {

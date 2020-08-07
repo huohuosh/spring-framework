@@ -31,6 +31,8 @@ import org.springframework.util.ObjectUtils;
  * <p>Note that the value doesn't need to be the final required type:
  * A {@link BeanWrapper} implementation should handle any necessary conversion,
  * as this object doesn't know anything about the objects it will be applied to.
+ * 保存单个bean属性的信息和值的对象
+ * 以对象的方式存储健值对,比存储在map会更加灵活
  *
  * @author Rod Johnson
  * @author Rob Harrop
@@ -41,24 +43,40 @@ import org.springframework.util.ObjectUtils;
  */
 @SuppressWarnings("serial")
 public class PropertyValue extends BeanMetadataAttributeAccessor implements Serializable {
-
+	/**
+	 * 1.1 属性名称
+	 */
 	private final String name;
-
+	/**
+	 * 1.2 属性值
+	 */
 	@Nullable
 	private final Object value;
-
+	/**
+	 *  2.1 属性值是否为 Optional
+	 */
 	private boolean optional = false;
-
+	/**
+	 *  2.2 属性值是否已经进行了类型转换
+	 */
 	private boolean converted = false;
-
+	/**
+	 * 2.3 类型转换后的属性值
+	 */
 	@Nullable
 	private Object convertedValue;
 
-	/** Package-visible field that indicates whether conversion is necessary. */
+	/**
+	 * Package-visible field that indicates whether conversion is necessary.
+	 * 3.1 属性值是否需要进行类型转换，如果转换前后对象都是同一个，说明不用转换
+	 */
 	@Nullable
 	volatile Boolean conversionNecessary;
 
-	/** Package-visible field for caching the resolved property path tokens. */
+	/**
+	 * Package-visible field for caching the resolved property path tokens.
+	 * 3.2 缓存解析后的属性名称，如 attr[‘info‘][‘name‘]
+	 */
 	@Nullable
 	transient volatile Object resolvedTokens;
 
@@ -77,6 +95,7 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 	/**
 	 * Copy constructor.
 	 * @param original the PropertyValue to copy (never {@code null})
+	 * 复制传入的对象属性生产新的对象
 	 */
 	public PropertyValue(PropertyValue original) {
 		Assert.notNull(original, "Original must not be null");
@@ -88,6 +107,7 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 		this.conversionNecessary = original.conversionNecessary;
 		this.resolvedTokens = original.resolvedTokens;
 		setSource(original.getSource());
+		//复制原始对象的属性信息
 		copyAttributesFrom(original);
 	}
 
@@ -96,6 +116,8 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 	 * The original holder will be exposed as source of the new holder.
 	 * @param original the PropertyValue to link to (never {@code null})
 	 * @param newValue the new value to apply
+	 * 传入原始对象和要改变的新值，生产新的对象，原始对象保持到original属性中
+	 *
 	 */
 	public PropertyValue(PropertyValue original, @Nullable Object newValue) {
 		Assert.notNull(original, "Original must not be null");
@@ -105,6 +127,7 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 		this.conversionNecessary = original.conversionNecessary;
 		this.resolvedTokens = original.resolvedTokens;
 		setSource(original);
+		//复制原始对象的属性信息
 		copyAttributesFrom(original);
 	}
 
@@ -131,6 +154,9 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 	 * Return the original PropertyValue instance for this value holder.
 	 * @return the original PropertyValue (either a source of this
 	 * value holder or this value holder itself).
+	 * 原始的PropertyValue
+	 * 如果source为null，返回自身
+	 * 如果source不为空，循环去取source信息直到source为null
 	 */
 	public PropertyValue getOriginalPropertyValue() {
 		PropertyValue original = this;

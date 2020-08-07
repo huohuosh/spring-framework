@@ -29,6 +29,8 @@ import org.springframework.util.StringUtils;
  * a base implementation of all methods. To be extended by subclasses.
  *
  * <p>{@link Serializable} if subclasses and all attribute values are {@link Serializable}.
+ * 实现AttributeAccessor接口的抽象类，
+ * 提供AttributeAccessor接口中所有方法的简单实现，用于被子类扩展
  *
  * @author Rob Harrop
  * @author Juergen Hoeller
@@ -38,9 +40,14 @@ import org.springframework.util.StringUtils;
 public abstract class AttributeAccessorSupport implements AttributeAccessor, Serializable {
 
 	/** Map with String keys and Object values. */
+	//缓存属性信息的Map结构
 	private final Map<String, Object> attributes = new LinkedHashMap<>();
 
-
+	/**
+	 * 设置属性信息
+	 * @param name the unique attribute key
+	 * @param value the attribute value to be attached
+	 */
 	@Override
 	public void setAttribute(String name, @Nullable Object value) {
 		Assert.notNull(name, "Name must not be null");
@@ -52,6 +59,11 @@ public abstract class AttributeAccessorSupport implements AttributeAccessor, Ser
 		}
 	}
 
+	/**
+	 * 获取属性信息
+	 * @param name the unique attribute key
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public Object getAttribute(String name) {
@@ -59,6 +71,11 @@ public abstract class AttributeAccessorSupport implements AttributeAccessor, Ser
 		return this.attributes.get(name);
 	}
 
+	/**
+	 * 删除属性信息
+	 * @param name the unique attribute key
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public Object removeAttribute(String name) {
@@ -66,12 +83,21 @@ public abstract class AttributeAccessorSupport implements AttributeAccessor, Ser
 		return this.attributes.remove(name);
 	}
 
+	/**
+	 * 判断是否包含属性信息
+	 * @param name the unique attribute key
+	 * @return
+	 */
 	@Override
 	public boolean hasAttribute(String name) {
 		Assert.notNull(name, "Name must not be null");
 		return this.attributes.containsKey(name);
 	}
 
+	/**
+	 * 获取所有的属性名
+	 * @return
+	 */
 	@Override
 	public String[] attributeNames() {
 		return StringUtils.toStringArray(this.attributes.keySet());
@@ -79,6 +105,7 @@ public abstract class AttributeAccessorSupport implements AttributeAccessor, Ser
 
 
 	/**
+	 * 从其他属性访问器中的属性所属对象中获取属性信息
 	 * Copy the attributes from the supplied AttributeAccessor to this accessor.
 	 * @param source the AttributeAccessor to copy from
 	 */
