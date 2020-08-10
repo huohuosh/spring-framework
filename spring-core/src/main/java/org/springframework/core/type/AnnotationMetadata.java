@@ -37,6 +37,7 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * Get the fully qualified class names of all annotation types that
 	 * are <em>present</em> on the underlying class.
 	 * @return the annotation type names
+	 * 拿到Class上标注的所有注解，依赖于Class#getAnnotations
 	 */
 	Set<String> getAnnotationTypes();
 
@@ -46,6 +47,8 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * @param annotationName the fully qualified class name of the meta-annotation
 	 * type to look for
 	 * @return the meta-annotation type names, or an empty set if none found
+	 * 拿到所有的元注解信息 AnnotatedElementUtils#getMetaAnnotationTypes
+	 * 如果传入@ConditionalOnClass 则会把@ConditionalOnClass注解上的所有注解的全路径返回
 	 */
 	Set<String> getMetaAnnotationTypes(String annotationName);
 
@@ -55,6 +58,7 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * @param annotationName the fully qualified class name of the annotation
 	 * type to look for
 	 * @return {@code true} if a matching annotation is present
+	 * 是否包含指定注解 （annotationName：全类名）
 	 */
 	boolean hasAnnotation(String annotationName);
 
@@ -64,6 +68,7 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * @param metaAnnotationName the fully qualified class name of the
 	 * meta-annotation type to look for
 	 * @return {@code true} if a matching meta-annotation is present
+	 * 拿到该元注解信息
 	 */
 	boolean hasMetaAnnotation(String metaAnnotationName);
 
@@ -72,6 +77,8 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * annotated (or meta-annotated) with the given annotation type.
 	 * @param annotationName the fully qualified class name of the annotation
 	 * type to look for
+	 * 类里面只有有一个方法标注有指定注解，就返回true
+	 * getDeclaredMethods获得所有方法， AnnotatedElementUtils.isAnnotated是否标注有指定注解
 	 */
 	boolean hasAnnotatedMethods(String annotationName);
 
@@ -85,6 +92,8 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * @return a set of {@link MethodMetadata} for methods that have a matching
 	 * annotation. The return value will be an empty set if no methods match
 	 * the annotation type.
+	 * 注意返回的是MethodMetadata 原理基本同上
+	 * getDeclaredMethods和AnnotatedElementUtils.isAnnotated  最后把Method转为MethodMetadata
 	 */
 	Set<MethodMetadata> getAnnotatedMethods(String annotationName);
 

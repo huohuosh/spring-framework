@@ -46,6 +46,7 @@ public interface AnnotatedTypeMetadata {
 	 * @param annotationName the fully qualified class name of the annotation
 	 * type to look for
 	 * @return whether a matching annotation is defined
+	 * 是否有匹配的注解类型
 	 */
 	boolean isAnnotated(String annotationName);
 
@@ -58,6 +59,7 @@ public interface AnnotatedTypeMetadata {
 	 * @return a Map of attributes, with the attribute name as key (e.g. "value")
 	 * and the defined attribute value as Map value. This return value will be
 	 * {@code null} if no matching annotation is defined.
+	 * 获取特定类型注解的属性
 	 */
 	@Nullable
 	Map<String, Object> getAnnotationAttributes(String annotationName);
@@ -74,6 +76,9 @@ public interface AnnotatedTypeMetadata {
 	 * @return a Map of attributes, with the attribute name as key (e.g. "value")
 	 * and the defined attribute value as Map value. This return value will be
 	 * {@code null} if no matching annotation is defined.
+	 * 获取特定类型注解的属性（如果包含类引用转换成String）
+	 * 这个方法的厉害之处是如果指定的Class不存在时，也能通过字节码获取到类的完全限定名
+	 * 如果不转换的话，指定的Class不存在时，获取到属性值将是一个异常对象(ClassNotFoundException)
 	 */
 	@Nullable
 	Map<String, Object> getAnnotationAttributes(String annotationName, boolean classValuesAsString);
@@ -88,6 +93,10 @@ public interface AnnotatedTypeMetadata {
 	 * and a list of the defined attribute values as Map value. This return value will
 	 * be {@code null} if no matching annotation is defined.
 	 * @see #getAllAnnotationAttributes(String, boolean)
+	 * 返回该注解所有的属性（包含引用该注解的注解的属性值）
+	 * @ConditionalOnClass 注解并没有被元注解@Repeatable标注
+	 * 因此@ConditionalOnClass是不能被重复在类上使用的，那么value属性值应该是单个
+	 * 但如果有别的注解被@ConditionalOnClass注解了，那也会获取到该属性信息
 	 */
 	@Nullable
 	MultiValueMap<String, Object> getAllAnnotationAttributes(String annotationName);

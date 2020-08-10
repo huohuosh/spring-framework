@@ -32,6 +32,7 @@ public interface ClassMetadata {
 
 	/**
 	 * Return the name of the underlying class.
+	 * 返回类名（注意返回的是最原始的那个className）
 	 */
 	String getClassName();
 
@@ -42,6 +43,7 @@ public interface ClassMetadata {
 
 	/**
 	 * Return whether the underlying class represents an annotation.
+	 * 是否是注解
 	 * @since 4.1
 	 */
 	boolean isAnnotation();
@@ -54,6 +56,7 @@ public interface ClassMetadata {
 	/**
 	 * Return whether the underlying class represents a concrete class,
 	 * i.e. neither an interface nor an abstract class.
+	 * 是否表示具体类,即不是接口且不是抽象类
 	 */
 	boolean isConcrete();
 
@@ -66,6 +69,12 @@ public interface ClassMetadata {
 	 * Determine whether the underlying class is independent, i.e. whether
 	 * it is a top-level class or a nested class (static inner class) that
 	 * can be constructed independently from an enclosing class.
+	 * a) Top level classes
+	 * b) Nested classes (static member classes) 静态内部类
+	 * c) Inner classes (non-static member classes) 非静态内部类
+	 * d) Local classes (named classes declared within a method) 在方法内定义的类
+	 * e) Anonymous classes 匿名类
+	 * 是否是独立的(能够创建对象的)  比如是 top-level类、或者静态内部类
 	 */
 	boolean isIndependent();
 
@@ -75,12 +84,14 @@ public interface ClassMetadata {
 	 * local class within a method).
 	 * <p>If this method returns {@code false}, then the underlying
 	 * class is a top-level class.
+	 * 是否非top-level类，如（内部类、方法内定义的类）
 	 */
 	boolean hasEnclosingClass();
 
 	/**
 	 * Return the name of the enclosing class of the underlying class,
 	 * or {@code null} if the underlying class is a top-level class.
+	 * 如果一个类不是top level的话，这个方法会返回包含这个类的top level类
 	 */
 	@Nullable
 	String getEnclosingClassName();
@@ -100,6 +111,7 @@ public interface ClassMetadata {
 	/**
 	 * Return the names of all interfaces that the underlying class
 	 * implements, or an empty array if there are none.
+	 * 会把实现的所有接口名称都返回  具体依赖于Class#getSuperclass
 	 */
 	String[] getInterfaceNames();
 
@@ -110,6 +122,7 @@ public interface ClassMetadata {
 	 * inherited classes and interfaces. An empty array is returned if no member classes
 	 * or interfaces exist.
 	 * @since 3.1
+	 * 基于：Class#getDeclaredClasses  返回类中定义的公共、私有、保护的内部类
 	 */
 	String[] getMemberClassNames();
 
