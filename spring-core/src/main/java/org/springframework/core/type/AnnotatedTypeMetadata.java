@@ -35,6 +35,7 @@ import org.springframework.util.MultiValueMap;
  * @since 4.0
  * @see AnnotationMetadata
  * @see MethodMetadata
+ * 定义访问类或方法上的注解
  */
 public interface AnnotatedTypeMetadata {
 
