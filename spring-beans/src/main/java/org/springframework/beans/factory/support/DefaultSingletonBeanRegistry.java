@@ -96,12 +96,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 			Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
 	/** Names of beans currently excluded from in creation checks. */
-	// 当前从创建检查中排除的bean的名称。
+	// 当前从创建检查中排除的bean的名称,可以并发创建。
 	private final Set<String> inCreationCheckExclusions =
 			Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
 	/** List of suppressed Exceptions, available for associating related causes. */
 	// 存放出现异常的原因，可用于关联相关原因
+	// 当从ObjectFactory获得对象时出现异常，把suppressedExceptions的异常一并抛出。
 	@Nullable
 	private Set<Exception> suppressedExceptions;
 
