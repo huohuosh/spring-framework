@@ -36,15 +36,15 @@ import org.springframework.util.ObjectUtils;
  *
  * <p>Supports values for a specific index in the constructor argument list
  * as well as for generic argument matches by type.
- *
+ * 持有构造器的参数值，通常是一个BeanDefiniton的一部分
  * @author Juergen Hoeller
  * @since 09.11.2003
  * @see BeanDefinition#getConstructorArgumentValues
  */
 public class ConstructorArgumentValues {
-
+	// 索引参数
 	private final Map<Integer, ValueHolder> indexedArgumentValues = new LinkedHashMap<>();
-
+	// 按类型匹配的通用参数
 	private final List<ValueHolder> genericArgumentValues = new ArrayList<>();
 
 
@@ -56,6 +56,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Deep copy constructor.
+	 * 深拷贝
 	 * @param original the ConstructorArgumentValues to copy
 	 */
 	public ConstructorArgumentValues(ConstructorArgumentValues original) {
@@ -84,6 +85,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Add an argument value for the given index in the constructor argument list.
+	 * 在构造函数参数列表中为给定索引添加参数值。
 	 * @param index the index in the constructor argument list
 	 * @param value the argument value
 	 */
@@ -93,6 +95,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Add an argument value for the given index in the constructor argument list.
+	 * 在构造函数参数列表中为给定索引添加参数值。
 	 * @param index the index in the constructor argument list
 	 * @param value the argument value
 	 * @param type the type of the constructor argument
@@ -103,6 +106,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Add an argument value for the given index in the constructor argument list.
+	 * 在构造函数参数列表中为给定索引添加参数值。
 	 * @param index the index in the constructor argument list
 	 * @param newValue the argument value in the form of a ValueHolder
 	 */
@@ -115,12 +119,14 @@ public class ConstructorArgumentValues {
 	/**
 	 * Add an argument value for the given index in the constructor argument list,
 	 * merging the new value (typically a collection) with the current value
+	 * 在构造函数参数列表中为给定索引添加参数值，将新值（通常是集合）与当前值合并
 	 * if demanded: see {@link org.springframework.beans.Mergeable}.
 	 * @param key the index in the constructor argument list
 	 * @param newValue the argument value in the form of a ValueHolder
 	 */
 	private void addOrMergeIndexedArgumentValue(Integer key, ValueHolder newValue) {
 		ValueHolder currentValue = this.indexedArgumentValues.get(key);
+		// 如果当前位置有值,并且新值是接受合并的话,那合并一波之后作为新值
 		if (currentValue != null && newValue.getValue() instanceof Mergeable) {
 			Mergeable mergeable = (Mergeable) newValue.getValue();
 			if (mergeable.isMergeEnabled()) {
@@ -132,6 +138,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Check whether an argument value has been registered for the given index.
+	 * 检查是否已为给定索引注册参数值。
 	 * @param index the index in the constructor argument list
 	 */
 	public boolean hasIndexedArgumentValue(int index) {
@@ -140,6 +147,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Get argument value for the given index in the constructor argument list.
+	 * 获取构造函数参数列表中给定索引的参数值
 	 * @param index the index in the constructor argument list
 	 * @param requiredType the type to match (can be {@code null} to match
 	 * untyped values only)
@@ -152,6 +160,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Get argument value for the given index in the constructor argument list.
+	 * 获取给定索引的参数值
 	 * @param index the index in the constructor argument list
 	 * @param requiredType the type to match (can be {@code null} to match
 	 * untyped values only)
@@ -163,6 +172,7 @@ public class ConstructorArgumentValues {
 	public ValueHolder getIndexedArgumentValue(int index, @Nullable Class<?> requiredType, @Nullable String requiredName) {
 		Assert.isTrue(index >= 0, "Index must not be negative");
 		ValueHolder valueHolder = this.indexedArgumentValues.get(index);
+		// valueHolder不为null &&  类型为null或者类型相同 && 名称为空或者名称相同
 		if (valueHolder != null &&
 				(valueHolder.getType() == null ||
 						(requiredType != null && ClassUtils.matchesTypeName(requiredType, valueHolder.getType()))) &&
@@ -175,6 +185,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Return the map of indexed argument values.
+	 * 返回索引参数值的映射（只读的）
 	 * @return unmodifiable Map with Integer index as key and ValueHolder as value
 	 * @see ValueHolder
 	 */
@@ -185,6 +196,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Add a generic argument value to be matched by type.
+	 * 添加要按类型匹配的通用参数值
 	 * <p>Note: A single generic argument value will just be used once,
 	 * rather than matched multiple times.
 	 * @param value the argument value
@@ -195,6 +207,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Add a generic argument value to be matched by type.
+	 * 添加要按类型匹配的通用参数值
 	 * <p>Note: A single generic argument value will just be used once,
 	 * rather than matched multiple times.
 	 * @param value the argument value
@@ -208,6 +221,7 @@ public class ConstructorArgumentValues {
 	 * Add a generic argument value to be matched by type or name (if available).
 	 * <p>Note: A single generic argument value will just be used once,
 	 * rather than matched multiple times.
+	 * 添加要通过类型或名称匹配的通用参数值（如果可用）
 	 * @param newValue the argument value in the form of a ValueHolder
 	 * <p>Note: Identical ValueHolder instances will only be registered once,
 	 * to allow for merging and re-merging of argument value definitions. Distinct
@@ -223,10 +237,13 @@ public class ConstructorArgumentValues {
 	/**
 	 * Add a generic argument value, merging the new value (typically a collection)
 	 * with the current value if demanded: see {@link org.springframework.beans.Mergeable}.
+	 * 添加通用参数值，将新值（通常是集合）与当前值合并（如果需要）
 	 * @param newValue the argument value in the form of a ValueHolder
 	 */
 	private void addOrMergeGenericArgumentValue(ValueHolder newValue) {
 		if (newValue.getName() != null) {
+			// 如果新值有name,那么就要遍历之前的list,找出同名的老值
+			// 是否接受合并,接收就合并下再删,不接受就直接删掉
 			for (Iterator<ValueHolder> it = this.genericArgumentValues.iterator(); it.hasNext();) {
 				ValueHolder currentValue = it.next();
 				if (newValue.getName().equals(currentValue.getName())) {
@@ -245,6 +262,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Look for a generic argument value that matches the given type.
+	 * 查找与给定类型匹配的泛型参数值
 	 * @param requiredType the type to match
 	 * @return the ValueHolder for the argument, or {@code null} if none set
 	 */
@@ -255,6 +273,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Look for a generic argument value that matches the given type.
+	 * 查找与给定类型匹配的泛型参数值
 	 * @param requiredType the type to match
 	 * @param requiredName the name to match
 	 * @return the ValueHolder for the argument, or {@code null} if none set
@@ -268,6 +287,7 @@ public class ConstructorArgumentValues {
 	 * Look for the next generic argument value that matches the given type,
 	 * ignoring argument values that have already been used in the current
 	 * resolution process.
+	 * 查找与给定类型匹配的下一个 泛型参数值，忽略已在当前解析过程中使用的参数值
 	 * @param requiredType the type to match (can be {@code null} to find
 	 * an arbitrary next generic argument value)
 	 * @param requiredName the name to match (can be {@code null} to not
@@ -279,17 +299,22 @@ public class ConstructorArgumentValues {
 	@Nullable
 	public ValueHolder getGenericArgumentValue(@Nullable Class<?> requiredType, @Nullable String requiredName, @Nullable Set<ValueHolder> usedValueHolders) {
 		for (ValueHolder valueHolder : this.genericArgumentValues) {
+			// 已经使用过，跳过
 			if (usedValueHolders != null && usedValueHolders.contains(valueHolder)) {
 				continue;
 			}
+			// requiredName不相同跳过
+			// TODO 没看明白
 			if (valueHolder.getName() != null && !"".equals(requiredName) &&
 					(requiredName == null || !valueHolder.getName().equals(requiredName))) {
 				continue;
 			}
+			// requiredType不匹配跳过
 			if (valueHolder.getType() != null &&
 					(requiredType == null || !ClassUtils.matchesTypeName(requiredType, valueHolder.getType()))) {
 				continue;
 			}
+			// 需要的值不能 分配 给指定的requiredType
 			if (requiredType != null && valueHolder.getType() == null && valueHolder.getName() == null &&
 					!ClassUtils.isAssignableValue(requiredType, valueHolder.getValue())) {
 				continue;
@@ -301,6 +326,7 @@ public class ConstructorArgumentValues {
 
 	/**
 	 * Return the list of generic argument values.
+	 * 返回只读的通用参数值持有者List集合
 	 * @return unmodifiable List of ValueHolders
 	 * @see ValueHolder
 	 */
@@ -312,6 +338,7 @@ public class ConstructorArgumentValues {
 	/**
 	 * Look for an argument value that either corresponds to the given index
 	 * in the constructor argument list or generically matches by type.
+	 * 根据索引和类别获取 值持有者对象
 	 * @param index the index in the constructor argument list
 	 * @param requiredType the parameter type to match
 	 * @return the ValueHolder for the argument, or {@code null} if none set
@@ -324,6 +351,7 @@ public class ConstructorArgumentValues {
 	/**
 	 * Look for an argument value that either corresponds to the given index
 	 * in the constructor argument list or generically matches by type.
+	 * 根据索引、类别和参数名获取 值持有者对象
 	 * @param index the index in the constructor argument list
 	 * @param requiredType the parameter type to match
 	 * @param requiredName the parameter name to match
@@ -351,6 +379,7 @@ public class ConstructorArgumentValues {
 	@Nullable
 	public ValueHolder getArgumentValue(int index, @Nullable Class<?> requiredType, @Nullable String requiredName, @Nullable Set<ValueHolder> usedValueHolders) {
 		Assert.isTrue(index >= 0, "Index must not be negative");
+		// 先根据index去找
 		ValueHolder valueHolder = getIndexedArgumentValue(index, requiredType, requiredName);
 		if (valueHolder == null) {
 			valueHolder = getGenericArgumentValue(requiredType, requiredName, usedValueHolders);
@@ -432,6 +461,8 @@ public class ConstructorArgumentValues {
 	/**
 	 * Holder for a constructor argument value, with an optional type
 	 * attribute indicating the target type of the actual constructor argument.
+	 * 内部类，持有一个构造器参数的值
+	 * 使用可选的type属性指示实际构造函数参数的目标类型
 	 */
 	public static class ValueHolder implements BeanMetadataElement {
 
