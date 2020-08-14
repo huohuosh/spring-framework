@@ -70,6 +70,7 @@ public class ConstructorArgumentValues {
 	 * <p>Note: Identical ValueHolder instances will only be registered once,
 	 * to allow for merging and re-merging of argument value definitions. Distinct
 	 * ValueHolder instances carrying the same content are of course allowed.
+	 * 使用单独的holder实例将所有给定的参数值复制到该对象中，以使值独立于原始对象.
 	 */
 	public void addArgumentValues(@Nullable ConstructorArgumentValues other) {
 		if (other != null) {
