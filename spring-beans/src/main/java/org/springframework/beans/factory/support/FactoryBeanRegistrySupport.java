@@ -111,18 +111,23 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 					object = doGetObjectFromFactoryBean(factory, beanName);
 					// Only post-process and store if not put there already during getObject() call above
 					// (e.g. because of circular reference processing triggered by custom getBean calls)
+					// 处理了仅有doGetObjectFromFactoryBean调用getObject()期间保存时需要进行后置处理,如循环引用的问题
 					Object alreadyThere = this.factoryBeanObjectCache.get(beanName);
 					if (alreadyThere != null) {
 						object = alreadyThere;
 					}
 					else {
+						// 是否需要后置处理
 						if (shouldPostProcess) {
+							// 通过传入的beanName来判断当前bean是否正在创建中
 							if (isSingletonCurrentlyInCreation(beanName)) {
 								// Temporarily return non-post-processed object, not storing it yet..
 								return object;
 							}
+							// 当前单例bean创建之前的回调该方法处理
 							beforeSingletonCreation(beanName);
 							try {
+								// 对object进行后置处理,如果在FactoryBean找不到该object抛如下异常
 								object = postProcessObjectFromFactoryBean(object, beanName);
 							}
 							catch (Throwable ex) {
@@ -144,6 +149,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 		else {
 			// factoryBean直接获取对象
 			Object object = doGetObjectFromFactoryBean(factory, beanName);
+			// 后置处理
 			if (shouldPostProcess) {
 				try {
 					object = postProcessObjectFromFactoryBean(object, beanName);
@@ -207,6 +213,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	 * The resulting object will get exposed for bean references.
 	 * <p>The default implementation simply returns the given object as-is.
 	 * Subclasses may override this, for example, to apply post-processors.
+	 * 后置处理FactoryBean获取的对象，默认返回该对象，子类后重写该方法
 	 * @param object the object obtained from the FactoryBean.
 	 * @param beanName the name of the bean
 	 * @return the object to expose
@@ -218,6 +225,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 
 	/**
 	 * Get a FactoryBean for the given bean if possible.
+	 * 如果实例是一个FactoryBean返回，否则抛出异常
 	 * @param beanName the name of the bean
 	 * @param beanInstance the corresponding bean instance
 	 * @return the bean instance as FactoryBean
