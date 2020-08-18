@@ -111,65 +111,116 @@ import org.springframework.util.StringValueResolver;
  */
 public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
 
-	/** Parent bean factory, for bean inheritance support. */
+	/**
+	 *  Parent bean factory, for bean inheritance support.
+	 *  父类容器
+	 */
 	@Nullable
 	private BeanFactory parentBeanFactory;
 
-	/** ClassLoader to resolve bean class names with, if necessary. */
+	/**
+	 * ClassLoader to resolve bean class names with, if necessary.
+	 * 类加载器
+	 */
 	@Nullable
 	private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
-	/** ClassLoader to temporarily resolve bean class names with, if necessary. */
+	/**
+	 * ClassLoader to temporarily resolve bean class names with, if necessary.
+	 * 临时加载器
+	 */
 	@Nullable
 	private ClassLoader tempClassLoader;
 
-	/** Whether to cache bean metadata or rather reobtain it for every access. */
+	/**
+	 * Whether to cache bean metadata or rather reobtain it for every access.
+	 * 是缓存bean元数据，或者在每次访问时重新获取它
+	 */
 	private boolean cacheBeanMetadata = true;
 
-	/** Resolution strategy for expressions in bean definition values. */
+	/**
+	 * Resolution strategy for expressions in bean definition values.
+	 * bean的表达式解析器
+	 */
 	@Nullable
 	private BeanExpressionResolver beanExpressionResolver;
 
-	/** Spring ConversionService to use instead of PropertyEditors. */
+	/**
+	 * Spring ConversionService to use instead of PropertyEditors.
+	 * 类型转换器（代替PropertyEditor）
+	 */
 	@Nullable
 	private ConversionService conversionService;
 
-	/** Custom PropertyEditorRegistrars to apply to the beans of this factory. */
+	/**
+	 * Custom PropertyEditorRegistrars to apply to the beans of this factory.
+	 * 属性编辑器
+	 */
 	private final Set<PropertyEditorRegistrar> propertyEditorRegistrars = new LinkedHashSet<>(4);
 
-	/** Custom PropertyEditors to apply to the beans of this factory. */
+	/**
+	 * Custom PropertyEditors to apply to the beans of this factory.
+	 * 类的属性编辑器
+	 */
 	private final Map<Class<?>, Class<? extends PropertyEditor>> customEditors = new HashMap<>(4);
 
-	/** A custom TypeConverter to use, overriding the default PropertyEditor mechanism. */
+	/**
+	 * A custom TypeConverter to use, overriding the default PropertyEditor mechanism.
+	 * 类型转换器（覆盖默认PropertyEditor机制）
+	 */
 	@Nullable
 	private TypeConverter typeConverter;
 
-	/** String resolvers to apply e.g. to annotation attribute values. */
+	/**
+	 * String resolvers to apply e.g. to annotation attribute values.
+	 * 为嵌入的值(如注释属性)添加字符串解析器
+	 */
 	private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
-	/** BeanPostProcessors to apply in createBean. */
+	/**
+	 * BeanPostProcessors to apply in createBean.
+	 * 后置处理器
+	 */
 	private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
 
-	/** Indicates whether any InstantiationAwareBeanPostProcessors have been registered. */
+	/**
+	 * Indicates whether any InstantiationAwareBeanPostProcessors have been registered.
+	 * InstantiationAwareBeanPostProcessors是否已注册
+	 */
 	private volatile boolean hasInstantiationAwareBeanPostProcessors;
 
-	/** Indicates whether any DestructionAwareBeanPostProcessors have been registered. */
+	/**
+	 * Indicates whether any DestructionAwareBeanPostProcessors have been registered.
+	 * DestructionAwareBeanPostProcessors是否已注册
+	 */
 	private volatile boolean hasDestructionAwareBeanPostProcessors;
 
-	/** Map from scope identifier String to corresponding Scope. */
+	/**
+	 * Map from scope identifier String to corresponding Scope.
+	 * 作用域
+	 */
 	private final Map<String, Scope> scopes = new LinkedHashMap<>(8);
 
 	/** Security context used when running with a SecurityManager. */
 	@Nullable
 	private SecurityContextProvider securityContextProvider;
 
-	/** Map from bean name to merged RootBeanDefinition. */
+	/**
+	 * Map from bean name to merged RootBeanDefinition.
+	 * 合并后的 RootBeanDefinition
+	 */
 	private final Map<String, RootBeanDefinition> mergedBeanDefinitions = new ConcurrentHashMap<>(256);
 
-	/** Names of beans that have already been created at least once. */
+	/**
+	 *  Names of beans that have already been created at least once.
+	 *  已经被创建的bean
+	 */
 	private final Set<String> alreadyCreated = Collections.newSetFromMap(new ConcurrentHashMap<>(256));
 
-	/** Names of beans that are currently in creation. */
+	/**
+	 * Names of beans that are currently in creation.
+	 * 本地缓存，正在创建的多例bean。这边用本地线程，是因为其他线程创建bean与当前线程不冲突
+	 */
 	private final ThreadLocal<Object> prototypesCurrentlyInCreation =
 			new NamedThreadLocal<>("Prototype beans currently in creation");
 
@@ -215,6 +266,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @param requiredType the required type of the bean to retrieve
 	 * @param args arguments to use when creating a bean instance using explicit arguments
 	 * (only applied when creating a new instance as opposed to retrieving an existing one)
+	 * 创建实例用到的参数（只有在创建新实例会用到，而不是获取已存在的对象）
 	 * @return an instance of the bean
 	 * @throws BeansException if the bean could not be created
 	 */
@@ -238,13 +290,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
-
+		// 获取beanName（别名处理、factoryBean & 前缀处理（去掉前缀））
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
 		//检查缓存中是否有手动注册的单例bean
 		Object sharedInstance = getSingleton(beanName);
+		// 已经创建且构造函数没有参数
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
@@ -255,6 +308,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			// 得到该对象，或者FactoryBean创建的对象
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -1634,6 +1688,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Get the object for the given bean instance, either the bean
 	 * instance itself or its created object in case of a FactoryBean.
+	 * 得到对象本身或者FactoryBean创建的对象
 	 * @param beanInstance the shared bean instance
 	 * @param name name that may include factory dereference prefix
 	 * @param beanName the canonical bean name
@@ -1644,10 +1699,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			Object beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) {
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
+		// 名称是以factoryBean前缀开头的
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
+			// 如果是空对象，返回
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
 			}
+			// 如果不是FactoryBean，抛出异常
 			if (!(beanInstance instanceof FactoryBean)) {
 				throw new BeanIsNotAFactoryException(beanName, beanInstance.getClass());
 			}
@@ -1656,15 +1714,18 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
+		// 实例不是FactoryBean或者需要返回的是FactoryBean本身，返回该对象
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
 			return beanInstance;
 		}
-
+		// 实例如果是FactoryBean并且name不包含FactoryBean前缀，说明需要返回getObject
 		Object object = null;
 		if (mbd == null) {
+			// bean定义为空，从缓存中获取该对象
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
+			// 缓存中不存在
 			// Return bean instance from factory.
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
 			// Caches object obtained from FactoryBean if it is a singleton.
