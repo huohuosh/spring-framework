@@ -55,7 +55,10 @@ import org.springframework.lang.Nullable;
  */
 public abstract class ClassUtils {
 
-	/** Suffix for array class names: {@code "[]"}. */
+	/**
+	 * Suffix for array class names: {@code "[]"}.
+	 * 数组类型后缀
+	 */
 	public static final String ARRAY_SUFFIX = "[]";
 
 	/** Prefix for internal array class names: {@code "["}. */
@@ -64,43 +67,63 @@ public abstract class ClassUtils {
 	/** Prefix for internal non-primitive array class names: {@code "[L"}. */
 	private static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
-	/** The package separator character: {@code '.'}. */
+	/**
+	 * The package separator character: {@code '.'}.
+	 * 包路径分隔符
+	 */
 	private static final char PACKAGE_SEPARATOR = '.';
 
-	/** The path separator character: {@code '/'}. */
+	/**
+	 * The path separator character: {@code '/'}.
+	 * 路径分隔符
+	 */
 	private static final char PATH_SEPARATOR = '/';
 
-	/** The inner class separator character: {@code '$'}. */
+	/**
+	 * The inner class separator character: {@code '$'}.
+	 * 内部类分隔符
+	 */
 	private static final char INNER_CLASS_SEPARATOR = '$';
 
-	/** The CGLIB class separator: {@code "$$"}. */
+	/**
+	 * The CGLIB class separator: {@code "$$"}.
+	 * CGLIB类分隔符
+	 */
 	public static final String CGLIB_CLASS_SEPARATOR = "$$";
 
-	/** The ".class" file suffix. */
+	/**
+	 * The ".class" file suffix.
+	 * class文件后缀
+	 */
 	public static final String CLASS_FILE_SUFFIX = ".class";
 
 
 	/**
 	 * Map with primitive wrapper type as key and corresponding primitive
 	 * type as value, for example: Integer.class -> int.class.
+	 * 包装类和原始类型映射
 	 */
 	private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new IdentityHashMap<>(8);
 
 	/**
 	 * Map with primitive type as key and corresponding wrapper
 	 * type as value, for example: int.class -> Integer.class.
+	 * 原始类型和包装类映射
 	 */
 	private static final Map<Class<?>, Class<?>> primitiveTypeToWrapperMap = new IdentityHashMap<>(8);
 
 	/**
 	 * Map with primitive type name as key and corresponding primitive
 	 * type as value, for example: "int" -> "int.class".
+	 * 原始类型名称和原始类型映射
 	 */
 	private static final Map<String, Class<?>> primitiveTypeNameMap = new HashMap<>(32);
 
 	/**
 	 * Map with common Java language class name as key and corresponding Class as value.
 	 * Primarily for efficient deserialization of remote invocations.
+	 * 公共的java类名和类对象的映射
+	 * 主要为了对远程调用有效的处理反序列化
 	 */
 	private static final Map<String, Class<?>> commonClassCache = new HashMap<>(64);
 
@@ -123,6 +146,7 @@ public abstract class ClassUtils {
 		primitiveWrapperTypeMap.put(Void.class, void.class);
 
 		// Map entry iteration is less expensive to initialize than forEach with lambdas
+		// 循环放入primitiveTypeToWrapperMap中，并放入缓存中
 		for (Map.Entry<Class<?>, Class<?>> entry : primitiveWrapperTypeMap.entrySet()) {
 			primitiveTypeToWrapperMap.put(entry.getValue(), entry.getKey());
 			registerCommonClasses(entry.getKey());
@@ -130,13 +154,14 @@ public abstract class ClassUtils {
 
 		Set<Class<?>> primitiveTypes = new HashSet<>(32);
 		primitiveTypes.addAll(primitiveWrapperTypeMap.values());
+		// 加入原始类型的数组类到对应的Map中
 		Collections.addAll(primitiveTypes, boolean[].class, byte[].class, char[].class,
 				double[].class, float[].class, int[].class, long[].class, short[].class);
 		primitiveTypes.add(void.class);
 		for (Class<?> primitiveType : primitiveTypes) {
 			primitiveTypeNameMap.put(primitiveType.getName(), primitiveType);
 		}
-
+		// 把相关的一些基础类型放入缓存中
 		registerCommonClasses(Boolean[].class, Byte[].class, Character[].class, Double[].class,
 				Float[].class, Integer[].class, Long[].class, Short[].class);
 		registerCommonClasses(Number.class, Number[].class, String.class, String[].class,
@@ -145,7 +170,7 @@ public abstract class ClassUtils {
 				Error.class, StackTraceElement.class, StackTraceElement[].class);
 		registerCommonClasses(Enum.class, Iterable.class, Iterator.class, Enumeration.class,
 				Collection.class, List.class, Set.class, Map.class, Map.Entry.class, Optional.class);
-
+		// 相关接口放入缓存中
 		Class<?>[] javaLanguageInterfaceArray = {Serializable.class, Externalizable.class,
 				Closeable.class, AutoCloseable.class, Cloneable.class, Comparable.class};
 		registerCommonClasses(javaLanguageInterfaceArray);
@@ -331,6 +356,7 @@ public abstract class ClassUtils {
 	 * Determine whether the {@link Class} identified by the supplied name is present
 	 * and can be loaded. Will return {@code false} if either the class or
 	 * one of its dependencies is not present or cannot be loaded.
+	 * 类是否存在且可以加载
 	 * @param className the name of the class to check
 	 * @param classLoader the class loader to use
 	 * (may be {@code null} which indicates the default class loader)
@@ -788,6 +814,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Determine the common ancestor of the given classes, if any.
+	 * 确定给定类的共同祖先
 	 * @param clazz1 the class to introspect
 	 * @param clazz2 the other class to introspect
 	 * @return the common ancestor (i.e. common superclass, one interface
@@ -826,6 +853,9 @@ public abstract class ClassUtils {
 	 * {@link Cloneable}, {@link Comparable} - all of which can be ignored when looking
 	 * for 'primary' user-level interfaces. Common characteristics: no service-level
 	 * operations, no bean property methods, no default methods.
+	 * 给定的接口是不是基础的java接口
+	 * 共同特征：没有service-level操作、没有bean属性方法、没有默认方法
+	 * TODO  'primary' user-level ?
 	 * @param ifc the interface to check
 	 * @since 5.0.3
 	 */
@@ -836,6 +866,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine if the supplied class is an <em>inner class</em>,
 	 * i.e. a non-static member of an enclosing class.
+	 * 确定提供的类是不是非静态内部类
 	 * @return {@code true} if the supplied class is an inner class
 	 * @since 5.0.5
 	 * @see Class#isMemberClass()
@@ -846,6 +877,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the given object is a CGLIB proxy.
+	 * 给定的对象是否为CGLIB代理
 	 * @param object the object to check
 	 * @see #isCglibProxyClass(Class)
 	 * @see org.springframework.aop.support.AopUtils#isCglibProxy(Object)
@@ -856,6 +888,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the specified class is a CGLIB-generated class.
+	 * 给定的类是否为CGLIB生成的类
 	 * @param clazz the class to check
 	 * @see #isCglibProxyClassName(String)
 	 */
@@ -865,6 +898,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the specified class name is a CGLIB-generated class.
+	 * 给定的类名是否为CGLIB生成的类
 	 * @param className the class name to check
 	 */
 	public static boolean isCglibProxyClassName(@Nullable String className) {
