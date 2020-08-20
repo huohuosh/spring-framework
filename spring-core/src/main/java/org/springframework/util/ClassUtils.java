@@ -57,7 +57,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Suffix for array class names: {@code "[]"}.
-	 * 数组类型后缀
+	 * 数组类型后缀（getTypeName返回）
 	 */
 	public static final String ARRAY_SUFFIX = "[]";
 
@@ -69,7 +69,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Prefix for internal non-primitive array class names: {@code "[L"}.
-	 * 非原始类型数组类名的前缀
+	 * 非原始类型数组类名的前缀（getName返回）
 	 */
 	private static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
@@ -203,6 +203,7 @@ public abstract class ClassUtils {
 	 * for example, for class path resource loading (but not necessarily for
 	 * {@code Class.forName}, which accepts a {@code null} ClassLoader
 	 * reference as well).
+	 * 返回默认类加载器
 	 * @return the default ClassLoader (only {@code null} if even the system
 	 * ClassLoader isn't accessible)
 	 * @see Thread#getContextClassLoader()
@@ -237,6 +238,7 @@ public abstract class ClassUtils {
 	 * Override the thread context ClassLoader with the environment's bean ClassLoader
 	 * if necessary, i.e. if the bean ClassLoader is not equivalent to the thread
 	 * context ClassLoader already.
+	 * 覆盖线程上下文的类加载器，返回原有类加载器
 	 * @param classLoaderToUse the actual ClassLoader to use for the thread context
 	 * @return the original thread context ClassLoader, or {@code null} if not overridden
 	 */
@@ -258,6 +260,7 @@ public abstract class ClassUtils {
 	 * for primitives (e.g. "int") and array class names (e.g. "String[]").
 	 * Furthermore, it is also capable of resolving inner class names in Java source
 	 * style (e.g. "java.lang.Thread.State" instead of "java.lang.Thread$State").
+	 * 替代Class.forName，也可以处理原始类型、数组类型和源样式的内部类格式，返回对应的类实例
 	 * @param name the name of the Class
 	 * @param classLoader the class loader to use
 	 * (may be {@code null}, which indicates the default class loader)
@@ -270,9 +273,10 @@ public abstract class ClassUtils {
 			throws ClassNotFoundException, LinkageError {
 
 		Assert.notNull(name, "Name must not be null");
-
+		// 是不是原始类型或者原始一元数组类型
 		Class<?> clazz = resolvePrimitiveClassName(name);
 		if (clazz == null) {
+			// 从通用类型里查找
 			clazz = commonClassCache.get(name);
 		}
 		if (clazz != null) {
@@ -280,6 +284,7 @@ public abstract class ClassUtils {
 		}
 
 		// "java.lang.String[]" style arrays
+		// 如果是包含数组后缀，获取该数组内元素Class,使用Array.newInstance得到类型
 		if (name.endsWith(ARRAY_SUFFIX)) {
 			String elementClassName = name.substring(0, name.length() - ARRAY_SUFFIX.length());
 			Class<?> elementClass = forName(elementClassName, classLoader);
@@ -287,6 +292,7 @@ public abstract class ClassUtils {
 		}
 
 		// "[Ljava.lang.String;" style arrays
+		// 如果是数组形式（Class.getName如果是一元数组，格式为'[LclassName;'）,使用Array.newInstance得到类型
 		if (name.startsWith(NON_PRIMITIVE_ARRAY_PREFIX) && name.endsWith(";")) {
 			String elementName = name.substring(NON_PRIMITIVE_ARRAY_PREFIX.length(), name.length() - 1);
 			Class<?> elementClass = forName(elementName, classLoader);
@@ -294,12 +300,13 @@ public abstract class ClassUtils {
 		}
 
 		// "[[I" or "[[Ljava.lang.String;" style arrays
+		// 多元数组的情况
 		if (name.startsWith(INTERNAL_ARRAY_PREFIX)) {
 			String elementName = name.substring(INTERNAL_ARRAY_PREFIX.length());
 			Class<?> elementClass = forName(elementName, classLoader);
 			return Array.newInstance(elementClass, 0).getClass();
 		}
-
+		// 其他情况通过Class.forName返回
 		ClassLoader clToUse = classLoader;
 		if (clToUse == null) {
 			clToUse = getDefaultClassLoader();
@@ -308,6 +315,7 @@ public abstract class ClassUtils {
 			return Class.forName(name, false, clToUse);
 		}
 		catch (ClassNotFoundException ex) {
+			// 判断是否是内部类,'.'替换成'$'，再尝试Class.forName
 			int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
 			if (lastDotIndex != -1) {
 				String innerClassName =
@@ -329,6 +337,7 @@ public abstract class ClassUtils {
 	 * <p>This is effectively equivalent to the {@code forName}
 	 * method with the same arguments, with the only difference being
 	 * the exceptions thrown in case of class loading failure.
+	 * 等同于forName，会抛出对应异常
 	 * @param className the name of the Class
 	 * @param classLoader the class loader to use
 	 * (may be {@code null}, which indicates the default class loader)
@@ -391,6 +400,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the given class is visible in the given ClassLoader.
+	 * 判断给定的类是否在给定的类加载器中可见
 	 * @param clazz the class to check (typically an interface)
 	 * @param classLoader the ClassLoader to check against
 	 * (may be {@code null} in which case this method will always return {@code true})
@@ -415,6 +425,7 @@ public abstract class ClassUtils {
 	/**
 	 * Check whether the given class is cache-safe in the given context,
 	 * i.e. whether it is loaded by the given ClassLoader or a parent of it.
+	 * 判断类是否是可以缓存，即该类型是否在指定classloader或者其parent classloader中
 	 * @param clazz the class to analyze
 	 * @param classLoader the ClassLoader to potentially cache metadata in
 	 * (may be {@code null} which indicates the system class loader)
@@ -457,6 +468,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the given class is loadable in the given ClassLoader.
+	 * 判断该类是否是给定的类加载器加载的
 	 * @param clazz the class to check (typically an interface)
 	 * @param classLoader the ClassLoader to check against
 	 * @since 5.0.6
@@ -478,6 +490,7 @@ public abstract class ClassUtils {
 	 * <p>Also supports the JVM's internal class names for primitive arrays.
 	 * Does <i>not</i> support the "[]" suffix notation for primitive arrays;
 	 * this is only supported by {@link #forName(String, ClassLoader)}.
+	 * 类名是否是原始类型
 	 * @param name the name of the potentially primitive class
 	 * @return the primitive class, or {@code null} if the name does not denote
 	 * a primitive class or primitive array class
@@ -498,6 +511,7 @@ public abstract class ClassUtils {
 	 * Check if the given class represents a primitive wrapper,
 	 * i.e. Boolean, Byte, Character, Short, Integer, Long, Float, Double, or
 	 * Void.
+	 * 是否是原始类型包装类
 	 * @param clazz the class to check
 	 * @return whether the given class is a primitive wrapper class
 	 */
@@ -511,6 +525,7 @@ public abstract class ClassUtils {
 	 * char, short, int, long, float, or double), {@code void}, or a wrapper for
 	 * those types (i.e. Boolean, Byte, Character, Short, Integer, Long, Float,
 	 * Double, or Void).
+	 * 是否是原始类型或其包装类
 	 * @param clazz the class to check
 	 * @return {@code true} if the given class represents a primitive, void, or
 	 * a wrapper class
@@ -916,6 +931,7 @@ public abstract class ClassUtils {
 	 * Return the user-defined class for the given instance: usually simply
 	 * the class of the given instance, but the original class in case of a
 	 * CGLIB-generated subclass.
+	 * 返回用户定义的类名，CGLIB类返回父类，其他返回自己本身
 	 * @param instance the instance to check
 	 * @return the user-defined class
 	 */
@@ -927,6 +943,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return the user-defined class for the given class: usually simply the given
 	 * class, but the original class in case of a CGLIB-generated subclass.
+	 * 返回用户定义的类名，CGLIB类返回父类，其他返回自己本身
 	 * @param clazz the class to check
 	 * @return the user-defined class
 	 */
@@ -944,6 +961,8 @@ public abstract class ClassUtils {
 	 * Return a descriptive name for the given object's type: usually simply
 	 * the class name, but component type class name + "[]" for arrays,
 	 * and an appended list of implemented interfaces for JDK proxies.
+	 * 返回一个对象的描述类型：通常是类名，可以处理数组
+	 * 如果是JDK代理，会加上实现的接口列表
 	 * @param value the value to introspect
 	 * @return the qualified name of the class
 	 */
@@ -972,6 +991,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Check whether the given class matches the user-specified type name.
+	 * 给定的类型名是否和class的类名匹配
 	 * @param clazz the class to check
 	 * @param typeName the type name to match
 	 */
@@ -982,6 +1002,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Get the class name without the qualified package name.
+	 * 返回不带报名的类名称
 	 * @param className the className to get the short name for
 	 * @return the class name of the class without the package name
 	 * @throws IllegalArgumentException if the className is empty
@@ -1000,6 +1021,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Get the class name without the qualified package name.
+	 * 得到一个不加包名的类名
 	 * @param clazz the class to get the short name for
 	 * @return the class name of the class without the package name
 	 */
@@ -1010,12 +1032,14 @@ public abstract class ClassUtils {
 	/**
 	 * Return the short string name of a Java class in uncapitalized JavaBeans
 	 * property format. Strips the outer class name in case of an inner class.
+	 * 返回非大写的短类名，如果是内部类，去掉外部类的类名
 	 * @param clazz the class
 	 * @return the short name rendered in a standard JavaBeans property format
 	 * @see java.beans.Introspector#decapitalize(String)
 	 */
 	public static String getShortNameAsProperty(Class<?> clazz) {
 		String shortName = getShortName(clazz);
+		// 如果是内部类，去掉外部类的类名
 		int dotIndex = shortName.lastIndexOf(PACKAGE_SEPARATOR);
 		shortName = (dotIndex != -1 ? shortName.substring(dotIndex + 1) : shortName);
 		return Introspector.decapitalize(shortName);
@@ -1024,6 +1048,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine the name of the class file, relative to the containing
 	 * package: e.g. "String.class"
+	 * 得到类对应的类文件名称
 	 * @param clazz the class
 	 * @return the file name of the ".class" file
 	 */
@@ -1037,6 +1062,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine the name of the package of the given class,
 	 * e.g. "java.lang" for the {@code java.lang.String} class.
+	 * 得到类的包名称
 	 * @param clazz the class
 	 * @return the package name, or the empty String if the class
 	 * is defined in the default package
@@ -1049,6 +1075,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine the name of the package of the given fully-qualified class name,
 	 * e.g. "java.lang" for the {@code java.lang.String} class name.
+	 * 得到类的包名称
 	 * @param fqClassName the fully-qualified class name
 	 * @return the package name, or the empty String if the class
 	 * is defined in the default package
@@ -1062,6 +1089,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return the qualified name of the given class: usually simply
 	 * the class name, but component type class name + "[]" for arrays.
+	 * 返回全限定类名，如果是数组返回：类名 + '[]'
 	 * @param clazz the class
 	 * @return the qualified name of the class
 	 */
@@ -1073,6 +1101,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return the qualified name of the given method, consisting of
 	 * fully qualified interface/class name + "." + method name.
+	 * 获取方法的全名，包括类的权限定名.方法名
 	 * @param method the method
 	 * @return the qualified name of the method
 	 */
@@ -1083,6 +1112,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return the qualified name of the given method, consisting of
 	 * fully qualified interface/class name + "." + method name.
+	 * 取方法的全名，包括类的权限定名.方法名
 	 * @param method the method
 	 * @param clazz the clazz that the method is being invoked on
 	 * (may be {@code null} to indicate the method's declaring class)
