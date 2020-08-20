@@ -61,10 +61,16 @@ public abstract class ClassUtils {
 	 */
 	public static final String ARRAY_SUFFIX = "[]";
 
-	/** Prefix for internal array class names: {@code "["}. */
+	/**
+	 * Prefix for internal array class names: {@code "["}.
+	 * 数组类名前缀
+	 */
 	private static final String INTERNAL_ARRAY_PREFIX = "[";
 
-	/** Prefix for internal non-primitive array class names: {@code "[L"}. */
+	/**
+	 * Prefix for internal non-primitive array class names: {@code "[L"}.
+	 * 非原始类型数组类名的前缀
+	 */
 	private static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
 	/**
@@ -122,7 +128,7 @@ public abstract class ClassUtils {
 	/**
 	 * Map with common Java language class name as key and corresponding Class as value.
 	 * Primarily for efficient deserialization of remote invocations.
-	 * 公共的java类名和类对象的映射
+	 * 通用的java类名和类对象的映射
 	 * 主要为了对远程调用有效的处理反序列化
 	 */
 	private static final Map<String, Class<?>> commonClassCache = new HashMap<>(64);
@@ -180,6 +186,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Register the given common classes with the ClassUtils cache.
+	 * 注册通用类到缓存
 	 */
 	private static void registerCommonClasses(Class<?>... commonClasses) {
 		for (Class<?> clazz : commonClasses) {
