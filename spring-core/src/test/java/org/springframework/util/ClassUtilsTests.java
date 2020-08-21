@@ -443,9 +443,14 @@ public class ClassUtilsTests {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private static class OverloadedMethodsClass {
+	interface test {
+		void print(String messages);
+	}
 
+	@SuppressWarnings("unused")
+	private static class OverloadedMethodsClass implements test{
+
+		@Override
 		public void print(String messages) {
 			/* no-op */
 		}

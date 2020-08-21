@@ -442,6 +442,7 @@ public abstract class ClassUtils {
 				return false;
 			}
 			// Check for match in ancestors -> positive
+			// 给定的类加载器是当前类的类加载器的父类，返回true
 			ClassLoader current = classLoader;
 			while (current != null) {
 				current = current.getParent();
@@ -450,6 +451,7 @@ public abstract class ClassUtils {
 				}
 			}
 			// Check for match in children -> negative
+			// 给定的类加载器是当前类的类加载器的子类，返回false
 			while (target != null) {
 				target = target.getParent();
 				if (target == classLoader) {
@@ -538,6 +540,7 @@ public abstract class ClassUtils {
 	/**
 	 * Check if the given class represents an array of primitives,
 	 * i.e. boolean, byte, char, short, int, long, float, or double.
+	 * 判断是否是原始类型数组
 	 * @param clazz the class to check
 	 * @return whether the given class is a primitive array class
 	 */
@@ -549,6 +552,7 @@ public abstract class ClassUtils {
 	/**
 	 * Check if the given class represents an array of primitive wrappers,
 	 * i.e. Boolean, Byte, Character, Short, Integer, Long, Float, or Double.
+	 * 判断数组是否是原始类型包装类
 	 * @param clazz the class to check
 	 * @return whether the given class is a primitive wrapper array class
 	 */
@@ -560,6 +564,7 @@ public abstract class ClassUtils {
 	/**
 	 * Resolve the given class if it is a primitive class,
 	 * returning the corresponding primitive wrapper type instead.
+	 * 如果是原始类型返回其包装类，否则返回本身
 	 * @param clazz the class to check
 	 * @return the original class, or a primitive wrapper for the original primitive type
 	 */
@@ -572,6 +577,7 @@ public abstract class ClassUtils {
 	 * Check if the right-hand side type may be assigned to the left-hand side
 	 * type, assuming setting by reflection. Considers primitive wrapper
 	 * classes as assignable to the corresponding primitive types.
+	 * 判断左边是否是右边的父类或其本身，或者两边是原始类型或其包装类
 	 * @param lhsType the target type
 	 * @param rhsType the value type that should be assigned to the target type
 	 * @return if the target type is assignable from the value type
@@ -580,9 +586,11 @@ public abstract class ClassUtils {
 	public static boolean isAssignable(Class<?> lhsType, Class<?> rhsType) {
 		Assert.notNull(lhsType, "Left-hand side type must not be null");
 		Assert.notNull(rhsType, "Right-hand side type must not be null");
+		// 如果左边是右边的父类或其本身，返回true
 		if (lhsType.isAssignableFrom(rhsType)) {
 			return true;
 		}
+		// 左边如果是原始类型，判断右边是否是其包装类
 		if (lhsType.isPrimitive()) {
 			Class<?> resolvedPrimitive = primitiveWrapperTypeMap.get(rhsType);
 			if (lhsType == resolvedPrimitive) {
@@ -590,6 +598,7 @@ public abstract class ClassUtils {
 			}
 		}
 		else {
+			// 如果右边是原始类型，判断左边是否是其包装类
 			Class<?> resolvedWrapper = primitiveTypeToWrapperMap.get(rhsType);
 			if (resolvedWrapper != null && lhsType.isAssignableFrom(resolvedWrapper)) {
 				return true;
@@ -602,6 +611,7 @@ public abstract class ClassUtils {
 	 * Determine if the given type is assignable from the given value,
 	 * assuming setting by reflection. Considers primitive wrapper classes
 	 * as assignable to the corresponding primitive types.
+	 * 判断给定的对象是否来自给定的类型（如果给定的值为null，返回类型是否非原始类型）
 	 * @param type the target type
 	 * @param value the value that should be assigned to the type
 	 * @return if the type is assignable from the value
@@ -613,6 +623,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Convert a "/"-based resource path to a "."-based fully qualified class name.
+	 * 文件路径转换为包路径
 	 * @param resourcePath the resource path pointing to a class
 	 * @return the corresponding fully qualified class name
 	 */
@@ -623,6 +634,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Convert a "."-based fully qualified class name to a "/"-based resource path.
+	 * 包路径转换为文件路径
 	 * @param className the fully qualified class name
 	 * @return the corresponding resource path, pointing to the class
 	 */
@@ -641,6 +653,7 @@ public abstract class ClassUtils {
 	 * loading a resource file that is in the same package as a class file,
 	 * although {@link org.springframework.core.io.ClassPathResource} is usually
 	 * even more convenient.
+	 * 返回在指定类所在包下，传入资源名称的文件路径
 	 * @param clazz the Class whose package will be used as the base
 	 * @param resourceName the resource name to append. A leading slash is optional.
 	 * @return the built-up resource path
@@ -663,6 +676,7 @@ public abstract class ClassUtils {
 	 * directly to {@code ClassLoader.getResource()}. For it to be fed to
 	 * {@code Class.getResource} instead, a leading slash would also have
 	 * to be prepended to the returned value.
+	 * 返回类所在包的文件路径
 	 * @param clazz the input class. A {@code null} value or the default
 	 * (empty) package will result in an empty string ("") being returned.
 	 * @return a path which represents the package name
@@ -685,6 +699,7 @@ public abstract class ClassUtils {
 	/**
 	 * Build a String that consists of the names of the classes/interfaces
 	 * in the given array.
+	 * 返回一组类的字符串格式类名
 	 * <p>Basically like {@code AbstractCollection.toString()}, but stripping
 	 * the "class "/"interface " prefix before every class name.
 	 * @param classes an array of Class objects
@@ -700,6 +715,7 @@ public abstract class ClassUtils {
 	 * in the given collection.
 	 * <p>Basically like {@code AbstractCollection.toString()}, but stripping
 	 * the "class "/"interface " prefix before every class name.
+	 * 返回一组类的字符串格式类名
 	 * @param classes a Collection of Class objects (may be {@code null})
 	 * @return a String of form "[com.foo.Bar, com.foo.Baz]"
 	 * @see java.util.AbstractCollection#toString()
@@ -723,6 +739,7 @@ public abstract class ClassUtils {
 	/**
 	 * Copy the given {@code Collection} into a {@code Class} array.
 	 * <p>The {@code Collection} must contain {@code Class} elements only.
+	 * 类Collection形式转数组
 	 * @param collection the {@code Collection} to copy
 	 * @return the {@code Class} array
 	 * @since 3.1
@@ -770,6 +787,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return all interfaces that the given instance implements as a Set,
 	 * including ones implemented by superclasses.
+	 * 返回给定类或父类实现的接口
 	 * @param instance the instance to analyze for interfaces
 	 * @return all interfaces that the given instance implements as a Set
 	 */
@@ -782,6 +800,7 @@ public abstract class ClassUtils {
 	 * Return all interfaces that the given class implements as a Set,
 	 * including ones implemented by superclasses.
 	 * <p>If the class itself is an interface, it gets returned as sole interface.
+	 * 返回给定类或父类实现的接口
 	 * @param clazz the class to analyze for interfaces
 	 * @return all interfaces that the given object implements as a Set
 	 */
@@ -793,6 +812,7 @@ public abstract class ClassUtils {
 	 * Return all interfaces that the given class implements as a Set,
 	 * including ones implemented by superclasses.
 	 * <p>If the class itself is an interface, it gets returned as sole interface.
+	 * 返回给定类或父类实现的接口
 	 * @param clazz the class to analyze for interfaces
 	 * @param classLoader the ClassLoader that the interfaces need to be visible in
 	 * (may be {@code null} when accepting all declared interfaces)
@@ -821,6 +841,8 @@ public abstract class ClassUtils {
 	 * Create a composite interface Class for the given interfaces,
 	 * implementing the given interfaces in one single Class.
 	 * <p>This implementation builds a JDK proxy class for the given interfaces.
+	 * 返回一个代理Class，实现了给定的接口
+	 * 可以用得到的class尝试创建对象
 	 * @param interfaces the interfaces to merge
 	 * @param classLoader the ClassLoader to create the composite Class in
 	 * @return the merged interface as Class
@@ -1002,7 +1024,7 @@ public abstract class ClassUtils {
 
 	/**
 	 * Get the class name without the qualified package name.
-	 * 返回不带报名的类名称
+	 * 返回不带包名的类名称
 	 * @param className the className to get the short name for
 	 * @return the class name of the class without the package name
 	 * @throws IllegalArgumentException if the className is empty
@@ -1127,6 +1149,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine whether the given class has a public constructor with the given signature.
 	 * <p>Essentially translates {@code NoSuchMethodException} to "false".
+	 * 判断该类是否有构造器
 	 * @param clazz the clazz to analyze
 	 * @param paramTypes the parameter types of the method
 	 * @return whether the class has a corresponding constructor
@@ -1140,6 +1163,7 @@ public abstract class ClassUtils {
 	 * Determine whether the given class has a public constructor with the given signature,
 	 * and return it if available (else return {@code null}).
 	 * <p>Essentially translates {@code NoSuchMethodException} to {@code null}.
+	 * 得到一个类的构造器
 	 * @param clazz the clazz to analyze
 	 * @param paramTypes the parameter types of the method
 	 * @return the constructor, or {@code null} if not found
@@ -1159,6 +1183,7 @@ public abstract class ClassUtils {
 	/**
 	 * Determine whether the given class has a public method with the given signature.
 	 * <p>Essentially translates {@code NoSuchMethodException} to "false".
+	 * 判断该类是否有指定方法名和参数的公共方法
 	 * @param clazz the clazz to analyze
 	 * @param methodName the name of the method
 	 * @param paramTypes the parameter types of the method
@@ -1175,6 +1200,7 @@ public abstract class ClassUtils {
 	 * <p>In case of any signature specified, only returns the method if there is a
 	 * unique candidate, i.e. a single public method with the specified name.
 	 * <p>Essentially translates {@code NoSuchMethodException} to {@code IllegalStateException}.
+	 * 返回该类指定方法名和参数的公共方法，出错会抛出异常
 	 * @param clazz the clazz to analyze
 	 * @param methodName the name of the method
 	 * @param paramTypes the parameter types of the method
@@ -1186,6 +1212,7 @@ public abstract class ClassUtils {
 	public static Method getMethod(Class<?> clazz, String methodName, @Nullable Class<?>... paramTypes) {
 		Assert.notNull(clazz, "Class must not be null");
 		Assert.notNull(methodName, "Method name must not be null");
+		// 判断是否有参数
 		if (paramTypes != null) {
 			try {
 				return clazz.getMethod(methodName, paramTypes);
@@ -1195,6 +1222,7 @@ public abstract class ClassUtils {
 			}
 		}
 		else {
+			// 没有给定参数的类型的，通过方法名判断，如果有得到多个方法或未找到抛出异常
 			Set<Method> candidates = new HashSet<>(1);
 			Method[] methods = clazz.getMethods();
 			for (Method method : methods) {
@@ -1220,6 +1248,7 @@ public abstract class ClassUtils {
 	 * <p>In case of any signature specified, only returns the method if there is a
 	 * unique candidate, i.e. a single public method with the specified name.
 	 * <p>Essentially translates {@code NoSuchMethodException} to {@code null}.
+	 * 返回该类指定方法名和参数的公共方法
 	 * @param clazz the clazz to analyze
 	 * @param methodName the name of the method
 	 * @param paramTypes the parameter types of the method
@@ -1257,6 +1286,8 @@ public abstract class ClassUtils {
 	/**
 	 * Return the number of methods with a given name (with any argument types),
 	 * for the given class and/or its superclasses. Includes non-public methods.
+	 * 返回该类（和父类）指定方法名的方法（包括非公共方法）数量
+	 * TODO 接口和方法都遍历一遍不是会重复吗？
 	 * @param clazz	the clazz to check
 	 * @param methodName the name of the method
 	 * @return the number of methods with the given name
@@ -1265,16 +1296,19 @@ public abstract class ClassUtils {
 		Assert.notNull(clazz, "Class must not be null");
 		Assert.notNull(methodName, "Method name must not be null");
 		int count = 0;
+		// 类的方法
 		Method[] declaredMethods = clazz.getDeclaredMethods();
 		for (Method method : declaredMethods) {
 			if (methodName.equals(method.getName())) {
 				count++;
 			}
 		}
+		// 类实现的接口
 		Class<?>[] ifcs = clazz.getInterfaces();
 		for (Class<?> ifc : ifcs) {
 			count += getMethodCountForName(ifc, methodName);
 		}
+		// 父类的方法
 		if (clazz.getSuperclass() != null) {
 			count += getMethodCountForName(clazz.getSuperclass(), methodName);
 		}
@@ -1285,6 +1319,7 @@ public abstract class ClassUtils {
 	 * Does the given class or one of its superclasses at least have one or more
 	 * methods with the supplied name (with any argument types)?
 	 * Includes non-public methods.
+	 * 判断该类或父类是否存在该方法
 	 * @param clazz	the clazz to check
 	 * @param methodName the name of the method
 	 * @return whether there is at least one method with the given name
@@ -1292,18 +1327,21 @@ public abstract class ClassUtils {
 	public static boolean hasAtLeastOneMethodWithName(Class<?> clazz, String methodName) {
 		Assert.notNull(clazz, "Class must not be null");
 		Assert.notNull(methodName, "Method name must not be null");
+		// 判断当前类是否有该方法
 		Method[] declaredMethods = clazz.getDeclaredMethods();
 		for (Method method : declaredMethods) {
 			if (method.getName().equals(methodName)) {
 				return true;
 			}
 		}
+		// 判断当前类实现的接口是否有该方法
 		Class<?>[] ifcs = clazz.getInterfaces();
 		for (Class<?> ifc : ifcs) {
 			if (hasAtLeastOneMethodWithName(ifc, methodName)) {
 				return true;
 			}
 		}
+		// 父类是否有该方法
 		return (clazz.getSuperclass() != null && hasAtLeastOneMethodWithName(clazz.getSuperclass(), methodName));
 	}
 
@@ -1402,22 +1440,27 @@ public abstract class ClassUtils {
 
 	/**
 	 * Determine whether the given method is overridable in the given target class.
+	 * 判断该方法是否可以在给定的类里重写
 	 * @param method the method to check
 	 * @param targetClass the target class to check against
 	 */
 	private static boolean isOverridable(Method method, @Nullable Class<?> targetClass) {
+		// 肯定不是私有方法
 		if (Modifier.isPrivate(method.getModifiers())) {
 			return false;
 		}
+		// 共有方法或者protected
 		if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
 			return true;
 		}
+		// 是否在同一包下
 		return (targetClass == null ||
 				getPackageName(method.getDeclaringClass()).equals(getPackageName(targetClass)));
 	}
 
 	/**
 	 * Return a public static method of a class.
+	 * 返回给定方法名和参数的public static方法
 	 * @param clazz the class which defines the method
 	 * @param methodName the static method name
 	 * @param args the parameter types to the method
