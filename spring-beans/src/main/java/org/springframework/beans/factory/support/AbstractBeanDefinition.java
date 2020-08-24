@@ -222,6 +222,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	/**
 	 * Create a new AbstractBeanDefinition with default settings.
+	 * 构造器
 	 */
 	protected AbstractBeanDefinition() {
 		this(null, null);
@@ -230,6 +231,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	/**
 	 * Create a new AbstractBeanDefinition with the given
 	 * constructor argument values and property values.
+	 * 构造器
 	 */
 	protected AbstractBeanDefinition(@Nullable ConstructorArgumentValues cargs, @Nullable MutablePropertyValues pvs) {
 		this.constructorArgumentValues = cargs;
@@ -239,6 +241,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	/**
 	 * Create a new AbstractBeanDefinition as a deep copy of the given
 	 * bean definition.
+	 * 从给定的bean definition复制 AbstractBeanDefinition
 	 * @param original the original bean definition to copy from
 	 */
 	protected AbstractBeanDefinition(BeanDefinition original) {
@@ -252,18 +255,22 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		setRole(original.getRole());
 		setSource(original.getSource());
 		copyAttributesFrom(original);
-
+		// 是 AbstractBeanDefinition 的子类
 		if (original instanceof AbstractBeanDefinition) {
 			AbstractBeanDefinition originalAbd = (AbstractBeanDefinition) original;
+			// bean class
 			if (originalAbd.hasBeanClass()) {
 				setBeanClass(originalAbd.getBeanClass());
 			}
+			// 构造器参数
 			if (originalAbd.hasConstructorArgumentValues()) {
 				setConstructorArgumentValues(new ConstructorArgumentValues(original.getConstructorArgumentValues()));
 			}
+			// 属性
 			if (originalAbd.hasPropertyValues()) {
 				setPropertyValues(new MutablePropertyValues(original.getPropertyValues()));
 			}
+			// method overrides
 			if (originalAbd.hasMethodOverrides()) {
 				setMethodOverrides(new MethodOverrides(originalAbd.getMethodOverrides()));
 			}

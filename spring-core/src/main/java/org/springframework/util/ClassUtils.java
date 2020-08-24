@@ -1359,6 +1359,9 @@ public abstract class ClassUtils {
 	 * <p><b>NOTE:</b> Since Spring 3.1.1, if Java security settings disallow reflective
 	 * access (e.g. calls to {@code Class#getDeclaredMethods} etc, this implementation
 	 * will fall back to returning the originally provided method.
+	 * 找到最匹配的方法
+	 * 如IFoo.bar()和目标类DefaultFoo,得到的方法可能是DefaultFoo.bar()
+	 * 和AopUtils#getMostSpecificMethod相比，不提供桥接方法的处理
 	 * @param method the method to be invoked, which may come from an interface
 	 * @param targetClass the target class for the current invocation
 	 * (may be {@code null} or may not even implement the method)
@@ -1367,8 +1370,10 @@ public abstract class ClassUtils {
 	 * @see #getInterfaceMethodIfPossible
 	 */
 	public static Method getMostSpecificMethod(Method method, @Nullable Class<?> targetClass) {
+		// 该方法不在给定的类中，可以在给定的类中重新
 		if (targetClass != null && targetClass != method.getDeclaringClass() && isOverridable(method, targetClass)) {
 			try {
+				// 是Public的，找到该方法在该类对应的方法
 				if (Modifier.isPublic(method.getModifiers())) {
 					try {
 						return targetClass.getMethod(method.getName(), method.getParameterTypes());
@@ -1378,6 +1383,7 @@ public abstract class ClassUtils {
 					}
 				}
 				else {
+					// 查找类和父类的方法中有没有该方法
 					Method specificMethod =
 							ReflectionUtils.findMethod(targetClass, method.getName(), method.getParameterTypes());
 					return (specificMethod != null ? specificMethod : method);
@@ -1394,15 +1400,18 @@ public abstract class ClassUtils {
 	 * Determine a corresponding interface method for the given method handle, if possible.
 	 * <p>This is particularly useful for arriving at a public exported type on Jigsaw
 	 * which can be reflectively invoked without an illegal access warning.
+	 * 得到该方法对应的接口方法，如果不存在，返回自身
 	 * @param method the method to be invoked, potentially from an implementation class
 	 * @return the corresponding interface method, or the original method if none found
 	 * @since 5.1
 	 * @see #getMostSpecificMethod
 	 */
 	public static Method getInterfaceMethodIfPossible(Method method) {
+		// 如果该方法是非接口的Public方法，进行后续处理
 		if (Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().isInterface()) {
 			Class<?> current = method.getDeclaringClass();
 			while (current != null && current != Object.class) {
+				// 获取该类实现的所有接口，如果存在该方法，返回
 				Class<?>[] ifcs = current.getInterfaces();
 				for (Class<?> ifc : ifcs) {
 					try {
@@ -1421,6 +1430,10 @@ public abstract class ClassUtils {
 	/**
 	 * Determine whether the given method is declared by the user or at least pointing to
 	 * a user-declared method.
+	 * 方法是否是用户声明的方法
+	 * isBridge - 桥接方法-最终指向用户声明的泛型方法
+	 * !isSynthetic - !（编译器生成的非默认构造函数的方法（如内部类使用外部类的方法或属性等，因为编译器会生成两个class文件））
+	 * !isGroovyObjectMethod - 非Groovy方法
 	 * <p>Checks {@link Method#isSynthetic()} (for implementation methods) as well as the
 	 * {@code GroovyObject} interface (for interface methods; on an implementation class,
 	 * implementations of the {@code GroovyObject} methods will be marked as synthetic anyway).
