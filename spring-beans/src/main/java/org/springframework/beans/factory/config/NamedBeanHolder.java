@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 
 /**
  * A simple holder for a given bean name plus bean instance.
+ * 持有bean名称和实例的holder
  *
  * @author Juergen Hoeller
  * @since 4.3.3
@@ -29,13 +30,15 @@ import org.springframework.util.Assert;
  */
 public class NamedBeanHolder<T> implements NamedBean {
 
+	// bean 名称
 	private final String beanName;
-
+	// bean 实例
 	private final T beanInstance;
 
 
 	/**
 	 * Create a new holder for the given bean name plus instance.
+	 * 创建 holder
 	 * @param beanName the name of the bean
 	 * @param beanInstance the corresponding bean instance
 	 */
