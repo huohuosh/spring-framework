@@ -177,11 +177,12 @@ public abstract class BeanFactoryUtils {
 		String[] result = lbf.getBeanNamesForType(type);
 		if (lbf instanceof HierarchicalBeanFactory) {
 			// 如果是 HierarchicalBeanFactory，且parentBeanFactory是ListableBeanFactory
-			// 获取
+			// 获取父工厂中包含特定类型的bean名称数组
 			HierarchicalBeanFactory hbf = (HierarchicalBeanFactory) lbf;
 			if (hbf.getParentBeanFactory() instanceof ListableBeanFactory) {
 				String[] parentResult = beanNamesForTypeIncludingAncestors(
 						(ListableBeanFactory) hbf.getParentBeanFactory(), type);
+				// 去重合并 bean 名称数组
 				result = mergeNamesWithParent(result, parentResult, hbf);
 			}
 		}
