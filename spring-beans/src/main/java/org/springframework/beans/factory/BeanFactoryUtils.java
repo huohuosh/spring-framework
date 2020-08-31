@@ -226,6 +226,9 @@ public abstract class BeanFactoryUtils {
 	 * will be matched against the type. If "allowEagerInit" is not set,
 	 * only raw FactoryBeans will be checked (which doesn't require initialization
 	 * of each FactoryBean).
+	 * 获取包含祖先在内的特定类型的bean名称数组
+	 * 同时指定是否包含单例，以及是否允许预初始化
+	 *
 	 * @param lbf the bean factory
 	 * @param includeNonSingletons whether to include prototype or scoped beans too
 	 * or just singletons (also applies to FactoryBeans)
@@ -258,6 +261,7 @@ public abstract class BeanFactoryUtils {
 	 * Get all bean names whose {@code Class} has the supplied {@link Annotation}
 	 * type, including those defined in ancestor factories, without creating any bean
 	 * instances yet. Will return unique names in case of overridden bean definitions.
+	 * 获取包含祖先在内的特定类型（且使用了特定注解）的bean名称数组
 	 * @param lbf the bean factory
 	 * @param annotationType the type of annotation to look for
 	 * @return the array of matching bean names, or an empty array if none
@@ -295,6 +299,8 @@ public abstract class BeanFactoryUtils {
 	 * hiding corresponding beans in ancestor factories.</b> This feature allows for
 	 * 'replacing' beans by explicitly choosing the same bean name in a child factory;
 	 * the bean in the ancestor factory won't be visible then, not even for by-type lookups.
+	 * 获取包含祖先在内的特定类型的bean实例map（key为bean名称，value为bean实例）
+	 * 相同名称的 bean 返回低等级 BeanFactory 中的实例
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @return the Map of matching bean instances, or an empty Map if none
@@ -313,6 +319,7 @@ public abstract class BeanFactoryUtils {
 				Map<String, T> parentResult = beansOfTypeIncludingAncestors(
 						(ListableBeanFactory) hbf.getParentBeanFactory(), type);
 				parentResult.forEach((beanName, beanInstance) -> {
+					// 如果当前集合中没有，加入
 					if (!result.containsKey(beanName) && !hbf.containsLocalBean(beanName)) {
 						result.put(beanName, beanInstance);
 					}
@@ -336,6 +343,7 @@ public abstract class BeanFactoryUtils {
 	 * hiding corresponding beans in ancestor factories.</b> This feature allows for
 	 * 'replacing' beans by explicitly choosing the same bean name in a child factory;
 	 * the bean in the ancestor factory won't be visible then, not even for by-type lookups.
+	 * 获取包含祖先在内的特定类型的bean实例map（key为bean名称，value为bean实例）
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @param includeNonSingletons whether to include prototype or scoped beans too
@@ -387,6 +395,7 @@ public abstract class BeanFactoryUtils {
 	 * hiding corresponding beans in ancestor factories.</b> This feature allows for
 	 * 'replacing' beans by explicitly choosing the same bean name in a child factory;
 	 * the bean in the ancestor factory won't be visible then, not even for by-type lookups.
+	 * 获取包含祖先在内的特定类型的bean实例，通过`uniqueBean`方法校验唯一性
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @return the matching bean instance
@@ -417,6 +426,7 @@ public abstract class BeanFactoryUtils {
 	 * hiding corresponding beans in ancestor factories.</b> This feature allows for
 	 * 'replacing' beans by explicitly choosing the same bean name in a child factory;
 	 * the bean in the ancestor factory won't be visible then, not even for by-type lookups.
+	 * 获取包含祖先在内的特定类型的bean实例，通过`uniqueBean`方法校验唯一性
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @param includeNonSingletons whether to include prototype or scoped beans too
@@ -449,6 +459,7 @@ public abstract class BeanFactoryUtils {
 	 * the raw FactoryBean itself will be matched against the type.
 	 * <p>This version of {@code beanOfType} automatically includes
 	 * prototypes and FactoryBeans.
+	 * 获取不包含祖先在内的特定类型的bean实例，通过`uniqueBean`方法校验唯一性
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @return the matching bean instance
@@ -473,6 +484,7 @@ public abstract class BeanFactoryUtils {
 	 * will be matched against the type. If "allowEagerInit" is not set,
 	 * only raw FactoryBeans will be checked (which doesn't require initialization
 	 * of each FactoryBean).
+	 * 获取不包含祖先在内的特定类型的bean实例，通过`uniqueBean`方法校验唯一性
 	 * @param lbf the bean factory
 	 * @param type type of bean to match
 	 * @param includeNonSingletons whether to include prototype or scoped beans too
@@ -524,6 +536,7 @@ public abstract class BeanFactoryUtils {
 
 	/**
 	 * Extract a unique bean for the given type from the given Map of matching beans.
+	 * 校验map的唯一性
 	 * @param type type of bean to match
 	 * @param matchingBeans all matching beans found
 	 * @return the unique bean instance
