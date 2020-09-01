@@ -470,10 +470,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		String beanName = transformedBeanName(name);
 		// 已创建单例或者存在 bean 定义
 		if (containsSingleton(beanName) || containsBeanDefinition(beanName)) {
+			// 如果不是 & 开头，返回true
+			// 是 & 开头，判断是不是 FactoryBean
 			return (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(name));
 		}
 		// Not found -> check parent.
-		// 如果当前容器存在，查找父容器
+		// 如果当前容器不存在，查找父容器
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		return (parentBeanFactory != null && parentBeanFactory.containsBean(originalBeanName(name)));
 	}
@@ -484,37 +486,47 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// 获取单例对象
 		Object beanInstance = getSingleton(beanName, false);
 		if (beanInstance != null) {
+			// 如果是 FactoryBean 判断是否是以 & 开头或者isSingleton为true
 			if (beanInstance instanceof FactoryBean) {
 				return (BeanFactoryUtils.isFactoryDereference(name) || ((FactoryBean<?>) beanInstance).isSingleton());
 			}
 			else {
+				// 非 FactoryBean 判断没有以 & 开头
 				return !BeanFactoryUtils.isFactoryDereference(name);
 			}
 		}
 
 		// No singleton instance found -> check bean definition.
+		// 当前容器不存在，也没有 bean 定义，调用父容器判断
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 			// No bean definition found in this factory -> delegate to parent.
 			return parentBeanFactory.isSingleton(originalBeanName(name));
 		}
-
+		// 得到合并后的 BeanDefinition
 		RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 
 		// In case of FactoryBean, return singleton status of created object if not a dereference.
+		// 如果 bean 定义是单例
 		if (mbd.isSingleton()) {
+			// 判断是否是 FactoryBean
 			if (isFactoryBean(beanName, mbd)) {
+				// 如果是 FactoryBean,
+				// 1.是其本身（以 & 开头），返回true
 				if (BeanFactoryUtils.isFactoryDereference(name)) {
 					return true;
 				}
+				// 2.是 FactoryBean 创建的 bean，返回 isSingleton 的结果
 				FactoryBean<?> factoryBean = (FactoryBean<?>) getBean(FACTORY_BEAN_PREFIX + beanName);
 				return factoryBean.isSingleton();
 			}
 			else {
+				// 非 FactoryBean ，判断是否已 & 以 & 开头
 				return !BeanFactoryUtils.isFactoryDereference(name);
 			}
 		}
 		else {
+			// bean 定义非单例，直接返回 false
 			return false;
 		}
 	}
@@ -522,24 +534,29 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@Override
 	public boolean isPrototype(String name) throws NoSuchBeanDefinitionException {
 		String beanName = transformedBeanName(name);
-
+		// 如果当前容器不存在 bean 定义，调用父容器 isPrototype 方法
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 			// No bean definition found in this factory -> delegate to parent.
 			return parentBeanFactory.isPrototype(originalBeanName(name));
 		}
-
+		// 得到合并后的 BeanDefinition
 		RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+		// bean 定义中为 prototype
 		if (mbd.isPrototype()) {
 			// In case of FactoryBean, return singleton status of created object if not a dereference.
+			// 如果不是 & 开头，返回true
+			// 是 & 开头，判断是不是 FactoryBean
 			return (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(beanName, mbd));
 		}
 
 		// Singleton or scoped - not a prototype.
 		// However, FactoryBean may still produce a prototype object...
+		// 如果是以 & 开头，返回 false
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
 			return false;
 		}
+		// 如果是 FactoryBean，判断是否是 prototype
 		if (isFactoryBean(beanName, mbd)) {
 			final FactoryBean<?> fb = (FactoryBean<?>) getBean(FACTORY_BEAN_PREFIX + beanName);
 			if (System.getSecurityManager() != null) {
@@ -548,36 +565,46 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						getAccessControlContext());
 			}
 			else {
+				// 是 SmartFactoryBean 且 isPrototype 为true || isSingleton 为 false
 				return ((fb instanceof SmartFactoryBean && ((SmartFactoryBean<?>) fb).isPrototype()) ||
 						!fb.isSingleton());
 			}
 		}
 		else {
+			// 非 FactoryBean，返回 false
 			return false;
 		}
 	}
-
+	// 指定的 beanName 是否与类型匹配
 	@Override
 	public boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException {
 		String beanName = transformedBeanName(name);
 
 		// Check manually registered singletons.
+		// 获取单例
 		Object beanInstance = getSingleton(beanName, false);
+		// 不为空
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
+			// 1.是 FactoryBean
 			if (beanInstance instanceof FactoryBean) {
+				// 不是以 & 开头，判断 type 和 typeToMatch
 				if (!BeanFactoryUtils.isFactoryDereference(name)) {
 					Class<?> type = getTypeForFactoryBean((FactoryBean<?>) beanInstance);
 					return (type != null && typeToMatch.isAssignableFrom(type));
 				}
 				else {
+					// 以 & 开头，判断 beanInstance 和 typeToMatch
 					return typeToMatch.isInstance(beanInstance);
 				}
 			}
+			// 2.普通 bean(非 FactoryBean，beanName 不以 & 开头)
 			else if (!BeanFactoryUtils.isFactoryDereference(name)) {
+				// 类型匹配返回 true
 				if (typeToMatch.isInstance(beanInstance)) {
 					// Direct match for exposed instance?
 					return true;
 				}
+				// 给定的类型包含泛型，并且给定的 beanName 在 bean 定义里
 				else if (typeToMatch.hasGenerics() && containsBeanDefinition(beanName)) {
 					// Generics potentially only match on the target class, not on the proxy...
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
