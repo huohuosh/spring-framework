@@ -634,13 +634,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		// No singleton instance found -> check bean definition.
+		// 当前容器不存在 beanName 对应的 bean 定义，调用父容器方法
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 			// No bean definition found in this factory -> delegate to parent.
 			return parentBeanFactory.isTypeMatch(originalBeanName(name), typeToMatch);
 		}
-
 		// Retrieve corresponding bean definition.
+		// 得到合并后的 BeanDefinition
 		RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 
 		Class<?> classToMatch = typeToMatch.resolve();
@@ -708,7 +709,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Check manually registered singletons.
 		Object beanInstance = getSingleton(beanName, false);
+		// 单例且不为空对象
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
+			// 返回 FactoryBean#getObjectType 或者对象本身类型
 			if (beanInstance instanceof FactoryBean && !BeanFactoryUtils.isFactoryDereference(name)) {
 				return getTypeForFactoryBean((FactoryBean<?>) beanInstance);
 			}
@@ -718,12 +721,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		// No singleton instance found -> check bean definition.
+		// 当前容器不存在 bean 定义，调用父容器方法
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 			// No bean definition found in this factory -> delegate to parent.
 			return parentBeanFactory.getType(originalBeanName(name));
 		}
-
+		// 得到合并后的 BeanDefinition
 		RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 
 		// Check decorated bean definition, if any: We assume it'll be easier
@@ -754,18 +758,27 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 	}
 
+	/**
+	 * 重写 {@link org.springframework.core.SimpleAliasRegistry#getAliases}
+	 * @param name the bean name to check for aliases
+	 * @return
+	 */
 	@Override
-	public String[] getAliases(String name) {
+		public String[] getAliases(String name) {
 		String beanName = transformedBeanName(name);
+		// 别名列表
 		List<String> aliases = new ArrayList<>();
 		boolean factoryPrefix = name.startsWith(FACTORY_BEAN_PREFIX);
 		String fullBeanName = beanName;
 		if (factoryPrefix) {
 			fullBeanName = FACTORY_BEAN_PREFIX + beanName;
 		}
+		// 如果是解析后的名称和给定的名称不一致。将 fullBeanName 加入到别名
 		if (!fullBeanName.equals(name)) {
 			aliases.add(fullBeanName);
 		}
+		// 调用父类方法得到别名数组
+		// 血还判断是否加 & ，并加入 aliases
 		String[] retrievedAliases = super.getAliases(beanName);
 		for (String retrievedAlias : retrievedAliases) {
 			String alias = (factoryPrefix ? FACTORY_BEAN_PREFIX : "") + retrievedAlias;
@@ -773,6 +786,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				aliases.add(alias);
 			}
 		}
+		// 本容器没有，调用父容器方法
 		if (!containsSingleton(beanName) && !containsBeanDefinition(beanName)) {
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null) {
@@ -1111,10 +1125,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	public boolean isFactoryBean(String name) throws NoSuchBeanDefinitionException {
 		String beanName = transformedBeanName(name);
 		Object beanInstance = getSingleton(beanName, false);
+		// 判断实例是否是 FactoryBean
 		if (beanInstance != null) {
 			return (beanInstance instanceof FactoryBean);
 		}
 		// No singleton instance found -> check bean definition.
+		// 没有实例，且父容器是 ConfigurableBeanFactory，调用父容器方法
 		if (!containsBeanDefinition(beanName) && getParentBeanFactory() instanceof ConfigurableBeanFactory) {
 			// No bean definition found in this factory -> delegate to parent.
 			return ((ConfigurableBeanFactory) getParentBeanFactory()).isFactoryBean(name);
@@ -1225,6 +1241,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Return the bean name, stripping out the factory dereference prefix if necessary,
 	 * and resolving aliases to canonical names.
+	 * 得处理别名后的 beanName, 如果是 FactoryBean 本身的话，去掉 &
 	 * @param name the user-specified name
 	 * @return the transformed bean name
 	 */
@@ -1234,6 +1251,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 	/**
 	 * Determine the original bean name, resolving locally defined aliases to canonical names.
+	 * 得到原始名称 （处理别名，FactoryBean 本身的话，加上 &）
 	 * @param name the user-specified name
 	 * @return the original bean name
 	 */

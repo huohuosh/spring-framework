@@ -207,8 +207,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private boolean enforceInitMethod = true;
 	// 是否强制需要destroy化方法（为true时，如果方法不存在会抛出异常）
 	private boolean enforceDestroyMethod = true;
-	// 是否是合成类
-	// （是不是应用自定义的，例如生成AOP代理时，会用到某些辅助类，这些辅助类不是应用自定义的，这个就是合成类）
+	/**
+	 * 是否是合成类
+	 * （是不是应用自定义的，例如生成AOP代理时，会用到某些辅助类，这些辅助类不是应用自定义的，这个就是合成类）
+	 * @see Class#isSynthetic()
+	 */
 	private boolean synthetic = false;
 
 	private int role = BeanDefinition.ROLE_APPLICATION;
