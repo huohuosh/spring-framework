@@ -59,7 +59,7 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 
 	@Nullable
 	private AnnotatedElement qualifiedElement;
-
+	/** 是否允许缓存 */
 	boolean allowCaching = true;
 
 	boolean isFactoryMethodUnique = false;
