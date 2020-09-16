@@ -173,7 +173,7 @@ public interface Resource extends InputStreamSource {
 	 * <p>Implementations are also encouraged to return this value
 	 * from their {@code toString} method.
 	 * @see Object#toString()
-	 * 返回资源的描述，用语处理资源错误的时候的输出
+	 * 返回资源的描述，用于处理资源错误的时候的输出
 	 */
 	String getDescription();
 
