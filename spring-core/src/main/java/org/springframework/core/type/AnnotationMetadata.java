@@ -48,7 +48,7 @@ public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata
 	 * type to look for
 	 * @return the meta-annotation type names, or an empty set if none found
 	 * 拿到该注解的所有元注解信息 AnnotatedElementUtils#getMetaAnnotationTypes
-	 * 如果传入@ConditionalOnClass 则会把@ConditionalOnClass注解上的所有注解的全路径返回
+	 * 如果传入@ConditionalOnClass 则会把@sConditionalOnClas注解上的所有注解的全路径返回
 	 */
 	Set<String> getMetaAnnotationTypes(String annotationName);
 

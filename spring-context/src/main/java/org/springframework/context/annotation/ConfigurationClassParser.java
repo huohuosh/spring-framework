@@ -160,9 +160,11 @@ class ConfigurationClassParser {
 
 
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+		// 遍历 configCandidates
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				// 根据类型处理配置类信息
 				if (bd instanceof AnnotatedBeanDefinition) {
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
@@ -215,6 +217,7 @@ class ConfigurationClassParser {
 
 
 	protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
+		// 判断是否要跳过
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
 		}

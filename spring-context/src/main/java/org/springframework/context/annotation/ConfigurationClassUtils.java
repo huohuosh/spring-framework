@@ -107,6 +107,7 @@ abstract class ConfigurationClassUtils {
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
+	 * 检查并标记配置类
 	 * @param beanDef the bean definition to check
 	 * @param metadataReaderFactory the current factory in use by the caller
 	 * @return whether the candidate qualifies as (any kind of) configuration class
@@ -120,6 +121,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		AnnotationMetadata metadata;
+		// 如果是 AnnotatedBeanDefinition，直接获取 AnnotationMetadata
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
@@ -144,7 +146,7 @@ abstract class ConfigurationClassUtils {
 				return false;
 			}
 		}
-
+		// 设置 ConfigurationClass 属性
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
@@ -156,6 +158,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		// 设置 order 属性
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);
