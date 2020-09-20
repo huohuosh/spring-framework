@@ -78,7 +78,7 @@ class ConditionEvaluator {
 	 * @return if the item should be skipped
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
-		// 如果 metadata 为空或者被 Conditional 注释
+		// 如果 metadata 为空或者没有被 Conditional 注释，返回 false，表明需要处理
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
 			return false;
 		}
@@ -90,7 +90,7 @@ class ConditionEvaluator {
 			}
 			return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
 		}
-
+		// 获取 conditions
 		List<Condition> conditions = new ArrayList<>();
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
@@ -98,14 +98,15 @@ class ConditionEvaluator {
 				conditions.add(condition);
 			}
 		}
-
+		// 排序 conditions
 		AnnotationAwareOrderComparator.sort(conditions);
-
+		// 判断 conditions
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
 			if (condition instanceof ConfigurationCondition) {
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
+			// 如果条件不匹配，返回 true，跳过处理该配置
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
 				return true;
 			}

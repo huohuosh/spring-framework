@@ -48,16 +48,24 @@ import org.springframework.util.ClassUtils;
  * @see ConfigurationClassParser
  */
 final class ConfigurationClass {
-
+	/**
+	 * 注解元数据
+	 */
 	private final AnnotationMetadata metadata;
-
+	/**
+	 * 类文件资源引用
+	 */
 	private final Resource resource;
 
 	@Nullable
 	private String beanName;
-
+	/**
+	 *
+	 */
 	private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
-
+	/**
+	 * {@link Bean} 注解的方法
+	 */
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
