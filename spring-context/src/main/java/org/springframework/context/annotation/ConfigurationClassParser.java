@@ -221,8 +221,11 @@ class ConfigurationClassParser {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
 		}
-
+		// 从链表中获取 ConfigurationClass
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
+		// 如果是导入的，看老的是不是导入的
+		// 如果是，合并，返回
+		// 如果不是，移除老的，使用新的
 		if (existingClass != null) {
 			if (configClass.isImported()) {
 				if (existingClass.isImported()) {
