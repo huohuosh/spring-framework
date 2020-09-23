@@ -218,14 +218,20 @@ final class ConfigurationClass {
 		return this.importedResources;
 	}
 
+	/**
+	 * 校验配置类
+	 * 被 @Configuration 注解的配置类需要被 CGLIB 重新，所有需要配置类可以被重新
+	 * @param problemReporter
+	 */
 	public void validate(ProblemReporter problemReporter) {
 		// A configuration class may not be final (CGLIB limitation)
+		// 如果配置类被 @Configuration 注解，该类不能是 final 的，如果是抛出异常
 		if (getMetadata().isAnnotated(Configuration.class.getName())) {
 			if (getMetadata().isFinal()) {
 				problemReporter.error(new FinalConfigurationProblem());
 			}
 		}
-
+		// 校验 BeanMethod
 		for (BeanMethod beanMethod : this.beanMethods) {
 			beanMethod.validate(problemReporter);
 		}
