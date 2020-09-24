@@ -314,7 +314,7 @@ class ConfigurationClassParser {
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations
-		// 处理 @ImportResource 注解（加入 configClass 的 importedResources 属性）
+		// 处理 @ImportResource 注解（加入 configClass 的 importedResources 属性，后续处理）
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {

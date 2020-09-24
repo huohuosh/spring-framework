@@ -149,6 +149,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 	/**
 	 * Register the {@link Configuration} class itself as a bean definition.
+	 * 如果配置类是配导入的，注册配置类的 BeanDefinition
 	 */
 	private void registerBeanDefinitionForImportedConfigurationClass(ConfigurationClass configClass) {
 		AnnotationMetadata metadata = configClass.getMetadata();
@@ -177,6 +178,7 @@ class ConfigurationClassBeanDefinitionReader {
 	/**
 	 * Read the given {@link BeanMethod}, registering bean definitions
 	 * with the BeanDefinitionRegistry based on its contents.
+	 * 注册 BeanMethod 相关的 BeanDefinition
 	 */
 	@SuppressWarnings("deprecation")  // for RequiredAnnotationBeanPostProcessor.SKIP_REQUIRED_CHECK_ATTRIBUTE
 	private void loadBeanDefinitionsForBeanMethod(BeanMethod beanMethod) {
@@ -331,13 +333,18 @@ class ConfigurationClassBeanDefinitionReader {
 		return true;
 	}
 
+	/**
+	 * 注册 {@link ImportResource} 相关的 BeanDefinition
+	 * @param importedResources
+	 */
 	private void loadBeanDefinitionsFromImportedResources(
 			Map<String, Class<? extends BeanDefinitionReader>> importedResources) {
 
 		Map<Class<?>, BeanDefinitionReader> readerInstanceCache = new HashMap<>();
-
+		// 遍历 importedResources
 		importedResources.forEach((resource, readerClass) -> {
 			// Default reader selection necessary?
+			// 确定 BeanDefinitionReader
 			if (BeanDefinitionReader.class == readerClass) {
 				if (StringUtils.endsWithIgnoreCase(resource, ".groovy")) {
 					// When clearly asking for Groovy, that's what they'll get...
@@ -348,7 +355,7 @@ class ConfigurationClassBeanDefinitionReader {
 					readerClass = XmlBeanDefinitionReader.class;
 				}
 			}
-
+			// 获得 BeanDefinitionReader 实例
 			BeanDefinitionReader reader = readerInstanceCache.get(readerClass);
 			if (reader == null) {
 				try {
@@ -369,11 +376,17 @@ class ConfigurationClassBeanDefinitionReader {
 			}
 
 			// TODO SPR-6310: qualify relative path locations as done in AbstractContextLoader.modifyLocations
+			// 加载并注册 BeanDefinition
 			reader.loadBeanDefinitions(resource);
 		});
 	}
 
+	/**
+	 * 处理配置类导入{@link ImportBeanDefinitionRegistrar} 实现类时的 BeanDefinition
+	 * @param registrars
+	 */
 	private void loadBeanDefinitionsFromRegistrars(Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> registrars) {
+		// 循环调用 ImportBeanDefinitionRegistrar 接口的实现方法
 		registrars.forEach((registrar, metadata) ->
 				registrar.registerBeanDefinitions(metadata, this.registry));
 	}
