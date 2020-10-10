@@ -311,7 +311,9 @@ public class BeanDefinitionParserDelegate {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private final XmlReaderContext readerContext;
-
+	/**
+	 * <beans>标签设置的默认值
+	 */
 	private final DocumentDefaultsDefinition defaults = new DocumentDefaultsDefinition();
 
 	private final ParseState parseState = new ParseState();

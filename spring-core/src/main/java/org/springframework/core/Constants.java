@@ -56,6 +56,7 @@ public class Constants {
 	/**
 	 * Create a new Constants converter class wrapping the given class.
 	 * <p>All <b>public</b> static final variables will be exposed, whatever their type.
+	 * 将给定类的所有 public static final 的常量都放入 fieldCache 中
 	 * @param clazz the class to analyze
 	 * @throws IllegalArgumentException if the supplied {@code clazz} is {@code null}
 	 */

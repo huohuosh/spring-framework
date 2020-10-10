@@ -71,6 +71,7 @@ public class BeanComponentDefinition extends BeanDefinitionHolder implements Com
 		List<BeanDefinition> innerBeans = new ArrayList<>();
 		List<BeanReference> references = new ArrayList<>();
 		PropertyValues propertyValues = beanDefinitionHolder.getBeanDefinition().getPropertyValues();
+		// 将 property 的值分类放入对应的属性
 		for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
 			Object value = propertyValue.getValue();
 			if (value instanceof BeanDefinitionHolder) {

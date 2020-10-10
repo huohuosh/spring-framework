@@ -80,35 +80,45 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 	/**
 	 * Indicates that the validation should be disabled.
+	 * 不需要验证
 	 */
 	public static final int VALIDATION_NONE = XmlValidationModeDetector.VALIDATION_NONE;
 
 	/**
 	 * Indicates that the validation mode should be detected automatically.
+	 * 验证模式-自动检测
 	 */
 	public static final int VALIDATION_AUTO = XmlValidationModeDetector.VALIDATION_AUTO;
 
 	/**
 	 * Indicates that DTD validation should be used.
+	 * 验证模式-DTD验证
 	 */
 	public static final int VALIDATION_DTD = XmlValidationModeDetector.VALIDATION_DTD;
 
 	/**
 	 * Indicates that XSD validation should be used.
+	 * 验证模式-XSD验证
 	 */
 	public static final int VALIDATION_XSD = XmlValidationModeDetector.VALIDATION_XSD;
 
 
 	/** Constants instance for this class. */
 	private static final Constants constants = new Constants(XmlBeanDefinitionReader.class);
-
+	/**
+	 * 默认验证模式为自动检测
+	 */
 	private int validationMode = VALIDATION_AUTO;
 
 	private boolean namespaceAware = false;
-
+	/**
+	 * 默认的 BeanDefinitionDocumentReader 类，用来注册 xml 中的 BeanDefinition
+	 */
 	private Class<? extends BeanDefinitionDocumentReader> documentReaderClass =
 			DefaultBeanDefinitionDocumentReader.class;
-
+	/**
+	 * 错误异常处理
+	 */
 	private ProblemReporter problemReporter = new FailFastProblemReporter();
 
 	private ReaderEventListener eventListener = new EmptyReaderEventListener();
@@ -117,16 +127,24 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 	@Nullable
 	private NamespaceHandlerResolver namespaceHandlerResolver;
-
+	/**
+	 * 默认的 DocumentLoader，用来加载 xml
+	 */
 	private DocumentLoader documentLoader = new DefaultDocumentLoader();
 
 	@Nullable
 	private EntityResolver entityResolver;
-
+	/**
+	 * 加载 xml 错误处理
+	 */
 	private ErrorHandler errorHandler = new SimpleSaxErrorHandler(logger);
-
+	/**
+	 * 用来获取 xml 验证模式是用哪种
+	 */
 	private final XmlValidationModeDetector validationModeDetector = new XmlValidationModeDetector();
-
+	/**
+	 * 当前加载的 xml 资源
+	 */
 	private final ThreadLocal<Set<EncodedResource>> resourcesCurrentlyBeingLoaded =
 			new NamedThreadLocal<>("XML bean definition resources currently being loaded");
 
@@ -392,6 +410,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		try {
 			// 加载 xml 中元素
 			Document doc = doLoadDocument(inputSource, resource);
+			// 解析 xml，注册 BeanDefinition
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -514,7 +533,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 创建 BeanDefinitionDocumentReader，用来解析 xml
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 现有 BeanDefinition 数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		return getRegistry().getBeanDefinitionCount() - countBefore;
