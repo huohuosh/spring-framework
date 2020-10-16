@@ -175,8 +175,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private boolean primary = false;
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
-	// 用于初始化Bean的回调函数，一旦指定，这个方法会覆盖工厂方法以及构造函数中的元数据
-	// TODO ?
+	/**
+	 * 用于初始化Bean的回调函数，一旦指定，这个方法会覆盖工厂方法以及构造函数中的元数据
+	 * 实例化优先使用 Supplier 来获取对象
+	 * @see AbstractAutowireCapableBeanFactory#obtainFromSupplier
+	 */
 	@Nullable
 	private Supplier<?> instanceSupplier;
 	// 是否允许访问非public方法和属性，应用于构造函数、工厂方法、init、destroy方法的解析
@@ -592,6 +595,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 			// Work out whether to apply setter autowiring or constructor autowiring.
 			// If it has a no-arg constructor it's deemed to be setter autowiring,
 			// otherwise we'll try constructor autowiring.
+			// 如果有无参构造方法返回 AUTOWIRE_BY_TYPE，否则 AUTOWIRE_CONSTRUCTOR
 			Constructor<?>[] constructors = getBeanClass().getConstructors();
 			for (Constructor<?> constructor : constructors) {
 				if (constructor.getParameterCount() == 0) {

@@ -235,7 +235,7 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	/**
-	 * 将注解元数据信息中Bean定义相关的通用属性应用到BeanDefinitaion上
+	 * 将注解元数据信息中Bean定义相关的通用属性应用到 BeanDefinition 上
 	 * @param abd Bean定义
 	 * @param metadata 类型上的注解元数据信息
 	 */
