@@ -183,11 +183,12 @@ class ConstructorResolver {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				// 处理构造器参数（转换相关的值和引用）
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
-
+			// 给构造器排序
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
@@ -440,7 +441,7 @@ class ConstructorResolver {
 		if (factoryMethodToUse == null || argsToUse == null) {
 			// Need to determine the factory method...
 			// Try all methods with this name to see if they match the given arguments.
-			// CGLIB类返回父类
+			// 如果是CGLIB类返回父类
 			factoryClass = ClassUtils.getUserClass(factoryClass);
 			// 获取 factoryClass 的所有可访问方法，遍历得到和 factoryMethod 一直的方法
 			Method[] rawCandidates = getCandidateMethods(factoryClass, mbd);

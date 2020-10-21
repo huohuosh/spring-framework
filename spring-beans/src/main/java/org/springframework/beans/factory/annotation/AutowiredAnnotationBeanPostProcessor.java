@@ -238,12 +238,26 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		this.injectionMetadataCache.remove(beanName);
 	}
 
+	/**
+	 * 1.查找 @Lookup 注解，加入 BeanDefinition 的 methodOverrides 中
+	 * 2.获取构造器集合
+	 * 得到的 candidateConstructors 有如下几种
+	 * - 被 {@link #autowiredAnnotationTypes} 注解的，且有 有一个 required=true
+	 * - 被 {@link #autowiredAnnotationTypes} 注解的，required=false + 默认构造器
+	 * - 没有被注解，一个有参数的构造器
+	 * - Kotlin 相关的，暂时不管
+	 * @param beanClass
+	 * @param beanName
+	 * @return
+	 * @throws BeanCreationException
+	 */
 	@Override
 	@Nullable
 	public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName)
 			throws BeanCreationException {
 
 		// Let's check for lookup methods here...
+		// 1.查找 @Lookup 注解，加入 BeanDefinition 中 methodOverrides
 		if (!this.lookupMethodsChecked.contains(beanName)) {
 			try {
 				ReflectionUtils.doWithMethods(beanClass, method -> {
@@ -268,7 +282,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			this.lookupMethodsChecked.add(beanName);
 		}
-
+		// 2.获取构造器集合
 		// Quick check on the concurrent map first, with minimal locking.
 		Constructor<?>[] candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 		if (candidateConstructors == null) {
@@ -278,6 +292,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				if (candidateConstructors == null) {
 					Constructor<?>[] rawCandidates;
 					try {
+						// 查找所有构造器
 						rawCandidates = beanClass.getDeclaredConstructors();
 					}
 					catch (Throwable ex) {
@@ -286,17 +301,23 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 					}
 					List<Constructor<?>> candidates = new ArrayList<>(rawCandidates.length);
+					// 如果构造器被 {@link #autowiredAnnotationTypes} 注解，且 required=true,不能有多个
 					Constructor<?> requiredConstructor = null;
+					// 参数为 0 的构造器
 					Constructor<?> defaultConstructor = null;
+					// 主要用于 Kotlin，非 Kotlin 返回空
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					int nonSyntheticConstructors = 0;
+					// 遍历构造器
 					for (Constructor<?> candidate : rawCandidates) {
+						// 非合成的 nonSyntheticConstructors + 1
 						if (!candidate.isSynthetic()) {
 							nonSyntheticConstructors++;
 						}
 						else if (primaryConstructor != null) {
 							continue;
 						}
+						// 查找构造器上 autowired 相关的注解，如果是 CGLIB 类，通过父类查找
 						AnnotationAttributes ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
@@ -318,6 +339,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 										". Found constructor with 'required' Autowired annotation already: " +
 										requiredConstructor);
 							}
+							// 查询 注解 required 属性，如果为 true, 当前构造器为 requiredConstructor
 							boolean required = determineRequiredStatus(ann);
 							if (required) {
 								if (!candidates.isEmpty()) {
