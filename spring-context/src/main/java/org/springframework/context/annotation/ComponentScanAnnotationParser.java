@@ -74,14 +74,24 @@ class ComponentScanAnnotationParser {
 
 
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+		// 创建 scanner
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
+		/**
+		 * 获取 beanName 生成规则
+		 * @see ComponentScan#nameGenerator()
+		 */
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
+		// 是否是默认属性，如果是使用当前类的 beanNameGenerator
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
 				BeanUtils.instantiateClass(generatorClass));
 
+		/**
+		 * 获取代理模式
+		 * @see ComponentScan#scopedProxy()
+		 */
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
@@ -91,24 +101,46 @@ class ComponentScanAnnotationParser {
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
 
+		/**
+		 * 设置资源路径规则 resourcePattern
+		 * @see ComponentScan#resourcePattern()
+		 * @see ClassPathBeanDefinitionScanner#DEFAULT_RESOURCE_PATTERN
+		 */
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
 
+		/**
+		 * 设置 includeFilters
+		 * @see ComponentScan#includeFilters()
+		 */
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addIncludeFilter(typeFilter);
 			}
 		}
+		/**
+		 * 设置 excludeFilters
+		 * @see ComponentScan#excludeFilters()
+		 */
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("excludeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addExcludeFilter(typeFilter);
 			}
 		}
 
+		/**
+		 * 是否延迟初始化
+		 * @see ComponentScan#lazyInit()
+		 */
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);
 		}
 
+		/**
+		 * 获取 basePackages
+		 * @see ComponentScan#basePackages()
+		 * @see ComponentScan#basePackageClasses()
+		 */
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {
@@ -119,10 +151,12 @@ class ComponentScanAnnotationParser {
 		for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
+		// 如果没有设置 basePackages，使用当前注解声明类所在的包名
 		if (basePackages.isEmpty()) {
 			basePackages.add(ClassUtils.getPackageName(declaringClass));
 		}
 
+		// 扫描去掉当前注解声明类
 		scanner.addExcludeFilter(new AbstractTypeHierarchyTraversingFilter(false, false) {
 			@Override
 			protected boolean matchClassName(String className) {
@@ -132,13 +166,26 @@ class ComponentScanAnnotationParser {
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 
+	/**
+	 * 处理 {@link ComponentScan.Filter}
+	 * @param filterAttributes
+	 * @return
+	 */
 	private List<TypeFilter> typeFiltersFor(AnnotationAttributes filterAttributes) {
 		List<TypeFilter> typeFilters = new ArrayList<>();
+		/**
+		 * 获取 filter 类型
+		 * @see ComponentScan.Filter#type()
+		 */
 		FilterType filterType = filterAttributes.getEnum("type");
-
+		/**
+		 * 获取 filter 类
+		 * @see ComponentScan.Filter#classes()
+		 */
 		for (Class<?> filterClass : filterAttributes.getClassArray("classes")) {
 			switch (filterType) {
 				case ANNOTATION:
+					// 确认是注解
 					Assert.isAssignable(Annotation.class, filterClass,
 							"@ComponentScan ANNOTATION type filter requires an annotation type");
 					@SuppressWarnings("unchecked")
@@ -149,9 +196,11 @@ class ComponentScanAnnotationParser {
 					typeFilters.add(new AssignableTypeFilter(filterClass));
 					break;
 				case CUSTOM:
+					// 确认是否实现 TypeFilter.class
 					Assert.isAssignable(TypeFilter.class, filterClass,
 							"@ComponentScan CUSTOM type filter requires a TypeFilter implementation");
 					TypeFilter filter = BeanUtils.instantiateClass(filterClass, TypeFilter.class);
+					// 调用 Aware 回调
 					ParserStrategyUtils.invokeAwareMethods(
 							filter, this.environment, this.resourceLoader, this.registry);
 					typeFilters.add(filter);
@@ -161,6 +210,9 @@ class ComponentScanAnnotationParser {
 			}
 		}
 
+		/**
+		 * @see ComponentScan.Filter#pattern()
+		 */
 		for (String expression : filterAttributes.getStringArray("pattern")) {
 			switch (filterType) {
 				case ASPECTJ:

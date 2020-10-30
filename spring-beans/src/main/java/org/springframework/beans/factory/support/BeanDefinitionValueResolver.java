@@ -105,10 +105,12 @@ class BeanDefinitionValueResolver {
 	public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
 		// We must check each value to see whether it requires a runtime reference
 		// to another bean to be resolved.
+		// RuntimeBeanReference 返回对应的 bean
 		if (value instanceof RuntimeBeanReference) {
 			RuntimeBeanReference ref = (RuntimeBeanReference) value;
 			return resolveReference(argName, ref);
 		}
+		// RuntimeBeanReference 判断是否存在该 bean ,返回对应的 beanName
 		else if (value instanceof RuntimeBeanNameReference) {
 			String refName = ((RuntimeBeanNameReference) value).getBeanName();
 			refName = String.valueOf(doEvaluate(refName));
@@ -118,11 +120,13 @@ class BeanDefinitionValueResolver {
 			}
 			return refName;
 		}
+		// BeanDefinitionHolder 解析内部 bean 定义，并返回对应的对象
 		else if (value instanceof BeanDefinitionHolder) {
 			// Resolve BeanDefinitionHolder: contains BeanDefinition with name and aliases.
 			BeanDefinitionHolder bdHolder = (BeanDefinitionHolder) value;
 			return resolveInnerBean(argName, bdHolder.getBeanName(), bdHolder.getBeanDefinition());
 		}
+		// BeanDefinition 解析内部 bean 定义，并返回对应的对象
 		else if (value instanceof BeanDefinition) {
 			// Resolve plain BeanDefinition, without contained name: use dummy name.
 			BeanDefinition bd = (BeanDefinition) value;
@@ -130,10 +134,12 @@ class BeanDefinitionValueResolver {
 					ObjectUtils.getIdentityHexString(bd);
 			return resolveInnerBean(argName, innerBeanName, bd);
 		}
+		// ManagedArray 解析并返回对应的数组
 		else if (value instanceof ManagedArray) {
 			// May need to resolve contained runtime references.
 			ManagedArray array = (ManagedArray) value;
 			Class<?> elementType = array.resolvedElementType;
+			// 获取数组类型
 			if (elementType == null) {
 				String elementTypeName = array.getElementTypeName();
 				if (StringUtils.hasText(elementTypeName)) {
@@ -154,18 +160,22 @@ class BeanDefinitionValueResolver {
 			}
 			return resolveManagedArray(argName, (List<?>) value, elementType);
 		}
+		// ManagedList 解析并返回对应的 List
 		else if (value instanceof ManagedList) {
 			// May need to resolve contained runtime references.
 			return resolveManagedList(argName, (List<?>) value);
 		}
+		// ManagedSet 解析并返回对应的 Set
 		else if (value instanceof ManagedSet) {
 			// May need to resolve contained runtime references.
 			return resolveManagedSet(argName, (Set<?>) value);
 		}
+		// ManagedMap 解析并返回对应的 Map
 		else if (value instanceof ManagedMap) {
 			// May need to resolve contained runtime references.
 			return resolveManagedMap(argName, (Map<?, ?>) value);
 		}
+		// ManagedProperties 解析并返回对应的 Properties
 		else if (value instanceof ManagedProperties) {
 			Properties original = (Properties) value;
 			Properties copy = new Properties();
@@ -185,6 +195,7 @@ class BeanDefinitionValueResolver {
 			});
 			return copy;
 		}
+		// ManagedProperties 返回解析后的对象
 		else if (value instanceof TypedStringValue) {
 			// Convert value to target type here.
 			TypedStringValue typedStringValue = (TypedStringValue) value;
@@ -205,6 +216,7 @@ class BeanDefinitionValueResolver {
 						"Error converting typed String value for " + argName, ex);
 			}
 		}
+		// NullBean 返回 null
 		else if (value instanceof NullBean) {
 			return null;
 		}
@@ -283,6 +295,7 @@ class BeanDefinitionValueResolver {
 
 	/**
 	 * Resolve a reference to another bean in the factory.
+	 * 获取 RuntimeBeanReference 的 bean 对象
 	 */
 	@Nullable
 	private Object resolveReference(Object argName, RuntimeBeanReference ref) {
@@ -290,6 +303,7 @@ class BeanDefinitionValueResolver {
 			Object bean;
 			String refName = ref.getBeanName();
 			refName = String.valueOf(doEvaluate(refName));
+			// 父 beanFactory
 			if (ref.isToParent()) {
 				if (this.beanFactory.getParentBeanFactory() == null) {
 					throw new BeanCreationException(
@@ -300,6 +314,7 @@ class BeanDefinitionValueResolver {
 				bean = this.beanFactory.getParentBeanFactory().getBean(refName);
 			}
 			else {
+				// 当前 factory，注册依赖关系
 				bean = this.beanFactory.getBean(refName);
 				this.beanFactory.registerDependentBean(refName, this.beanName);
 			}
@@ -333,8 +348,10 @@ class BeanDefinitionValueResolver {
 			if (mbd.isSingleton()) {
 				actualInnerBeanName = adaptInnerBeanName(innerBeanName);
 			}
+			// 注册内部类和外部类的依赖关系
 			this.beanFactory.registerContainedBean(actualInnerBeanName, this.beanName);
 			// Guarantee initialization of beans that the inner bean depends on.
+			// 注册内部类自身的依赖关系
 			String[] dependsOn = mbd.getDependsOn();
 			if (dependsOn != null) {
 				for (String dependsOnBean : dependsOn) {
@@ -343,6 +360,7 @@ class BeanDefinitionValueResolver {
 				}
 			}
 			// Actually create the inner bean instance now...
+			// 创建内部类实例，如果是 FactoryBean ，返回 FactoryBean 创建的类
 			Object innerBean = this.beanFactory.createBean(actualInnerBeanName, mbd, null);
 			if (innerBean instanceof FactoryBean) {
 				boolean synthetic = mbd.isSynthetic();

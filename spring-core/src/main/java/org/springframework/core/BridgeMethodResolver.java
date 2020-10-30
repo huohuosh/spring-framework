@@ -61,6 +61,7 @@ public final class BridgeMethodResolver {
 	 * if no more specific one could be found)
 	 */
 	public static Method findBridgedMethod(Method bridgeMethod) {
+		// 非桥接方法直接返回
 		if (!bridgeMethod.isBridge()) {
 			return bridgeMethod;
 		}
@@ -69,17 +70,20 @@ public final class BridgeMethodResolver {
 		List<Method> candidateMethods = new ArrayList<>();
 		Method[] methods = ReflectionUtils.getAllDeclaredMethods(bridgeMethod.getDeclaringClass());
 		for (Method candidateMethod : methods) {
+			// 方法不是桥接，方法名和方法个数相同，加入集合
 			if (isBridgedCandidateFor(candidateMethod, bridgeMethod)) {
 				candidateMethods.add(candidateMethod);
 			}
 		}
 
 		// Now perform simple quick check.
+		// 如果只有一个，返回
 		if (candidateMethods.size() == 1) {
 			return candidateMethods.get(0);
 		}
 
 		// Search for candidate match.
+		// 查找出和桥接方法匹配的被桥接方法，如果没有返回该桥接方法
 		Method bridgedMethod = searchCandidates(candidateMethods, bridgeMethod);
 		if (bridgedMethod != null) {
 			// Bridged method found...
@@ -118,9 +122,11 @@ public final class BridgeMethodResolver {
 		Method previousMethod = null;
 		boolean sameSig = true;
 		for (Method candidateMethod : candidateMethods) {
+			// 判断方法参数是否相同
 			if (isBridgeMethodFor(bridgeMethod, candidateMethod, bridgeMethod.getDeclaringClass())) {
 				return candidateMethod;
 			}
+			// 判断前一个方法是否和当前方法的泛型参数相同
 			else if (previousMethod != null) {
 				sameSig = sameSig &&
 						Arrays.equals(candidateMethod.getGenericParameterTypes(), previousMethod.getGenericParameterTypes());
@@ -135,10 +141,13 @@ public final class BridgeMethodResolver {
 	 * supplied candidate {@link Method}.
 	 */
 	static boolean isBridgeMethodFor(Method bridgeMethod, Method candidateMethod, Class<?> declaringClass) {
+		// 判断两个方法参数是否相同
 		if (isResolvedTypeMatch(candidateMethod, bridgeMethod, declaringClass)) {
 			return true;
 		}
+		// 获取父类中或者接口中和桥接方法名相同的的非桥接方法
 		Method method = findGenericDeclaration(bridgeMethod);
+		// 判断参数是否相同
 		return (method != null && isResolvedTypeMatch(method, candidateMethod, declaringClass));
 	}
 

@@ -38,8 +38,13 @@ import org.springframework.util.ClassUtils;
  */
 public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter {
 
+	/**
+	 * 注解类型
+	 */
 	private final Class<? extends Annotation> annotationType;
-
+	/**
+	 * 是否需要考虑元注解
+	 */
 	private final boolean considerMetaAnnotations;
 
 
@@ -74,6 +79,7 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 	public AnnotationTypeFilter(
 			Class<? extends Annotation> annotationType, boolean considerMetaAnnotations, boolean considerInterfaces) {
 
+		// 注解有 @Inherited 元注解，说明父类上的该注解可以被子类继承
 		super(annotationType.isAnnotationPresent(Inherited.class), considerInterfaces);
 		this.annotationType = annotationType;
 		this.considerMetaAnnotations = considerMetaAnnotations;
@@ -88,6 +94,11 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 		return this.annotationType;
 	}
 
+	/**
+	 * 有被声明注解标注，或者元注解包含该注解
+	 * @param metadataReader
+	 * @return
+	 */
 	@Override
 	protected boolean matchSelf(MetadataReader metadataReader) {
 		AnnotationMetadata metadata = metadataReader.getAnnotationMetadata();
@@ -95,12 +106,22 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 				(this.considerMetaAnnotations && metadata.hasMetaAnnotation(this.annotationType.getName()));
 	}
 
+	/**
+	 * 判断父类有没有该注解
+	 * @param superClassName
+	 * @return
+	 */
 	@Override
 	@Nullable
 	protected Boolean matchSuperClass(String superClassName) {
 		return hasAnnotation(superClassName);
 	}
 
+	/**
+	 * 判断接口有没有该注解
+	 * @param interfaceName
+	 * @return
+	 */
 	@Override
 	@Nullable
 	protected Boolean matchInterface(String interfaceName) {
@@ -109,6 +130,7 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 
 	@Nullable
 	protected Boolean hasAnnotation(String typeName) {
+		// 是 Object 返回 false
 		if (Object.class.getName().equals(typeName)) {
 			return false;
 		}

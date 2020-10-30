@@ -151,6 +151,7 @@ public class InjectionMetadata {
 		}
 
 		protected final void checkResourceType(Class<?> resourceType) {
+			// 如果是 field，判断类型是否和传入的匹配
 			if (this.isField) {
 				Class<?> fieldType = ((Field) this.member).getType();
 				if (!(resourceType.isAssignableFrom(fieldType) || fieldType.isAssignableFrom(resourceType))) {
@@ -159,6 +160,7 @@ public class InjectionMetadata {
 				}
 			}
 			else {
+				// 从 PropertyDescriptor 和 Method 获取类型，判断类型是否和传入的匹配
 				Class<?> paramType =
 						(this.pd != null ? this.pd.getPropertyType() : ((Method) this.member).getParameterTypes()[0]);
 				if (!(resourceType.isAssignableFrom(paramType) || paramType.isAssignableFrom(resourceType))) {
@@ -173,16 +175,18 @@ public class InjectionMetadata {
 		 */
 		protected void inject(Object target, @Nullable String requestingBeanName, @Nullable PropertyValues pvs)
 				throws Throwable {
-
+			// 如果是 field，调用 setter 方法
 			if (this.isField) {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
 				field.set(target, getResourceToInject(target, requestingBeanName));
 			}
 			else {
+				// 是否需要跳过
 				if (checkPropertySkipping(pvs)) {
 					return;
 				}
+				// 反射调用执行 method 方法
 				try {
 					Method method = (Method) this.member;
 					ReflectionUtils.makeAccessible(method);
@@ -245,6 +249,7 @@ public class InjectionMetadata {
 
 		/**
 		 * Either this or {@link #inject} needs to be overridden.
+		 * 得到要注入的资源
 		 */
 		@Nullable
 		protected Object getResourceToInject(Object target, @Nullable String requestingBeanName) {

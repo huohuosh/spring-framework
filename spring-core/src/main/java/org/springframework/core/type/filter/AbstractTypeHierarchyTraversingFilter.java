@@ -42,8 +42,13 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 需要考虑继承关系
+	 */
 	private final boolean considerInherited;
-
+	/**
+	 * 是否需要考虑接口
+	 */
 	private final boolean considerInterfaces;
 
 
@@ -68,9 +73,11 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 		}
 
 		if (this.considerInherited) {
+			// 获取父类
 			String superClassName = metadata.getSuperClassName();
 			if (superClassName != null) {
 				// Optimization to avoid creating ClassReader for super class.
+				// 先不读取 ClassMetadata 尝试判断是否匹配
 				Boolean superClassMatch = matchSuperClass(superClassName);
 				if (superClassMatch != null) {
 					if (superClassMatch.booleanValue()) {
@@ -79,6 +86,7 @@ public abstract class AbstractTypeHierarchyTraversingFilter implements TypeFilte
 				}
 				else {
 					// Need to read super class to determine a match...
+					// 读取父类判断父类是否匹配
 					try {
 						if (match(metadata.getSuperClassName(), metadataReaderFactory)) {
 							return true;

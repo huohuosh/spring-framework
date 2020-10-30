@@ -120,6 +120,11 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 要处理的注解类型
+	 * {@link Autowired}
+	 * {@link Value}
+	 */
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
 	private String requiredParameterName = "required";
@@ -130,11 +135,17 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Nullable
 	private ConfigurableListableBeanFactory beanFactory;
-
+	/**
+	 * 存储检查过 {@link Lookup} 注解的 beanName 集合
+	 */
 	private final Set<String> lookupMethodsChecked = Collections.newSetFromMap(new ConcurrentHashMap<>(256));
-
+	/**
+	 * 候选的构造器缓存
+	 */
 	private final Map<Class<?>, Constructor<?>[]> candidateConstructorsCache = new ConcurrentHashMap<>(256);
-
+	/**
+	 * bean 注入元数据的缓存
+	 */
 	private final Map<String, InjectionMetadata> injectionMetadataCache = new ConcurrentHashMap<>(256);
 
 
@@ -228,7 +239,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// 获取被 @Autowired、@Value 等注解标注的非静态字段、方法，构建 InjectionMetadata
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
+		// 将元数据保存到 RootBeanDefinition#externallyManagedConfigMembers 中
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -358,6 +371,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					}
 					if (!candidates.isEmpty()) {
 						// Add default constructor to list of optional constructors, as fallback.
+						// 如果被 @Autowired 标注的构造器没有 required 为 true 的
+						// 将默认构造器加入集合（如果有）
 						if (requiredConstructor == null) {
 							if (defaultConstructor != null) {
 								candidates.add(defaultConstructor);
@@ -393,8 +408,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+		// 获取被 @Autowired、@Value 等注解标注的非静态字段、方法
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
+			// 注入
 			metadata.inject(bean, beanName, pvs);
 		}
 		catch (BeanCreationException ex) {
@@ -422,8 +439,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	 */
 	public void processInjection(Object bean) throws BeanCreationException {
 		Class<?> clazz = bean.getClass();
+		// 获取被 @Autowired、@Value 等注解标注的非静态字段、方法
 		InjectionMetadata metadata = findAutowiringMetadata(clazz.getName(), clazz, null);
 		try {
+			// 注入
 			metadata.inject(bean, null, null);
 		}
 		catch (BeanCreationException ex) {
@@ -435,7 +454,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		}
 	}
 
-
+	/**
+	 * 获取被 @Autowired、@Value 等注解标注的非静态字段、方法，构建 InjectionMetadata
+	 * @param beanName
+	 * @param clazz
+	 * @param pvs
+	 * @return
+	 */
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, @Nullable PropertyValues pvs) {
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
@@ -456,27 +481,34 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		return metadata;
 	}
 
+	/**
+	 * 获取被 @Autowired、@Value 等注解标注的非静态字段、方法，构建 InjectionMetadata
+	 * @param clazz
+	 * @return
+	 */
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
 		List<InjectionMetadata.InjectedElement> elements = new ArrayList<>();
 		Class<?> targetClass = clazz;
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			// 获取被 @Autowired、@Value 等注解标注的非静态字段
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				AnnotationAttributes ann = findAutowiredAnnotation(field);
 				if (ann != null) {
+					// 不处理静态字段
 					if (Modifier.isStatic(field.getModifiers())) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static fields: " + field);
 						}
 						return;
 					}
+					// 获取 required 属性
 					boolean required = determineRequiredStatus(ann);
 					currElements.add(new AutowiredFieldElement(field, required));
 				}
 			});
-
+			// 获取被 @Autowired、@Value 等注解标注的非静态方法
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
@@ -484,12 +516,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				}
 				AnnotationAttributes ann = findAutowiredAnnotation(bridgedMethod);
 				if (ann != null && method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
+					// 不处理静态方法
 					if (Modifier.isStatic(method.getModifiers())) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation is not supported on static methods: " + method);
 						}
 						return;
 					}
+					// 没有参数，提示
 					if (method.getParameterCount() == 0) {
 						if (logger.isInfoEnabled()) {
 							logger.info("Autowired annotation should only be used on methods with parameters: " +
@@ -497,6 +531,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 					}
 					boolean required = determineRequiredStatus(ann);
+					// 获取方法对应的属性，如果有的话
 					PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
@@ -677,8 +712,11 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				arguments = resolveCachedArguments(beanName);
 			}
 			else {
+				// 得到方法所有参数
 				Class<?>[] paramTypes = method.getParameterTypes();
+				// 存放所有的参数对象值
 				arguments = new Object[paramTypes.length];
+				// 所有参数的封装数组
 				DependencyDescriptor[] descriptors = new DependencyDescriptor[paramTypes.length];
 				Set<String> autowiredBeans = new LinkedHashSet<>(paramTypes.length);
 				Assert.state(beanFactory != null, "No BeanFactory available");
@@ -689,11 +727,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					currDesc.setContainingClass(bean.getClass());
 					descriptors[i] = currDesc;
 					try {
+						// 得到方法参数对应的对象值
 						Object arg = beanFactory.resolveDependency(currDesc, beanName, autowiredBeans, typeConverter);
+						// 如果没有获取到参数值，方法对应的 required 属性为 false
+						// 参数集合置为 null,跳出循环
 						if (arg == null && !this.required) {
 							arguments = null;
 							break;
 						}
+						// 加入数组中
 						arguments[i] = arg;
 					}
 					catch (BeansException ex) {

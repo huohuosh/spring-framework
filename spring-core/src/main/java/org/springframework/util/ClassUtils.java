@@ -1123,7 +1123,7 @@ public abstract class ClassUtils {
 	/**
 	 * Return the qualified name of the given method, consisting of
 	 * fully qualified interface/class name + "." + method name.
-	 * 获取方法的全名，包括类的权限定名.方法名
+	 * 获取方法的全名，包括类的全限定名.方法名
 	 * @param method the method
 	 * @return the qualified name of the method
 	 */
