@@ -161,7 +161,12 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
-
+		/**
+		 * 使用默认过滤器过滤
+		 * 注册为默认过滤器 @Component 。
+		 * 包括注释 @Component 为元注解的 @Repository、@Service 和 @Controller。
+		 * 还支持Java EE 6 的 javax.annotation.ManagedBean 和 JSR-330 的 javax.inject.Named 注释
+		 */
 		if (useDefaultFilters) {
 			registerDefaultFilters();
 		}
@@ -272,17 +277,25 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			// 找到包路径下符合条件的 BeanDefinition
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				// 设置 scope
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
+				// 生成 beanName
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+				// 如果是 AbstractBeanDefinition，应用默认全局属性
+				// 如果存在 autowireCandidatePatterns，设置 autowireCandidate
 				if (candidate instanceof AbstractBeanDefinition) {
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+				// 如果是 AnnotatedBeanDefinition，根据注解设置基础的设置（@Lazy、@Primary 等）
 				if (candidate instanceof AnnotatedBeanDefinition) {
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				// 检查 BeanDefinition 是否需要注册
+				// 如果需要根据设置生成代理，注册 BeanDefinition
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =

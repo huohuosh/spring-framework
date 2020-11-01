@@ -313,6 +313,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+			// 查找包下符合条件的 BeanDefinition
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -419,7 +420,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			// 得到扫描路径
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			// 得到要扫描的资源
+			// 得到要扫描的所有 class 文件
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -429,11 +430,14 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+						// 生成对应的 BeanDefinition，加入集合
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// 根据 excludeFilters 和 includeFilters 过滤
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);
+							// 如果是具体的类或者有被 @Lookup 注解的方法，加入集合
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);

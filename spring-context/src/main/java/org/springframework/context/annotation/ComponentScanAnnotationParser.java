@@ -74,7 +74,11 @@ class ComponentScanAnnotationParser {
 
 
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
-		// 创建 scanner
+		/**
+		 * 获取 useDefaultFilters
+		 * 创建 scanner
+		 * @see ComponentScan#useDefaultFilters()
+		 */
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
