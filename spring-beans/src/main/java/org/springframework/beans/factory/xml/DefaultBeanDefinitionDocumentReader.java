@@ -183,12 +183,14 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						// 非 beans 命名空间元素处理
 						delegate.parseCustomElement(ele);
 					}
 				}
 			}
 		}
 		else {
+			// 非 beans 命名空间元素处理
 			delegate.parseCustomElement(root);
 		}
 	}

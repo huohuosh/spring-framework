@@ -115,7 +115,9 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	@Override
 	@Nullable
 	public NamespaceHandler resolve(String namespaceUri) {
+		// 获得命名空间和对应 handler 的映射
 		Map<String, Object> handlerMappings = getHandlerMappings();
+		// 获取对应的 handler
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
 			return null;
@@ -124,6 +126,10 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 			return (NamespaceHandler) handlerOrClassName;
 		}
 		else {
+			/**
+			 * 如果 handler 是字符串
+			 * 得到对应的类实例化对象，调用 init 方法，将处理后的实例放入映射中
+			 */
 			String className = (String) handlerOrClassName;
 			try {
 				Class<?> handlerClass = ClassUtils.forName(className, this.classLoader);
