@@ -102,11 +102,17 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 
 	protected final Log logger = LogFactory.getLog(getClass());
-
+	/**
+	 * 激活的 profiles
+	 */
 	private final Set<String> activeProfiles = new LinkedHashSet<>();
-
+	/**
+	 * 默认 profiles
+	 */
 	private final Set<String> defaultProfiles = new LinkedHashSet<>(getReservedDefaultProfiles());
-
+	/**
+	 * 环境属性集合
+	 */
 	private final MutablePropertySources propertySources = new MutablePropertySources();
 
 	private final ConfigurablePropertyResolver propertyResolver =
@@ -234,6 +240,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	 */
 	protected Set<String> doGetActiveProfiles() {
 		synchronized (this.activeProfiles) {
+			// 如果 activeProfiles 为空，获取 spring.profiles.active，设置到 activeProfiles 返回
 			if (this.activeProfiles.isEmpty()) {
 				String profiles = getProperty(ACTIVE_PROFILES_PROPERTY_NAME);
 				if (StringUtils.hasText(profiles)) {
@@ -328,11 +335,13 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	public boolean acceptsProfiles(String... profiles) {
 		Assert.notEmpty(profiles, "Must specify at least one profile");
 		for (String profile : profiles) {
+			// 如果该配置有 '!' 前缀，去掉前缀后为非激活配置，返回 true
 			if (StringUtils.hasLength(profile) && profile.charAt(0) == '!') {
 				if (!isProfileActive(profile.substring(1))) {
 					return true;
 				}
 			}
+			// 如果是激活的配置返回 true
 			else if (isProfileActive(profile)) {
 				return true;
 			}
@@ -454,11 +463,13 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public void merge(ConfigurableEnvironment parent) {
+		// 加入父 ConfigurableEnvironment 的属性
 		for (PropertySource<?> ps : parent.getPropertySources()) {
 			if (!this.propertySources.contains(ps.getName())) {
 				this.propertySources.addLast(ps);
 			}
 		}
+		// 加入父 ConfigurableEnvironment 中的激活配置
 		String[] parentActiveProfiles = parent.getActiveProfiles();
 		if (!ObjectUtils.isEmpty(parentActiveProfiles)) {
 			synchronized (this.activeProfiles) {
@@ -467,6 +478,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 				}
 			}
 		}
+		// 加入父 ConfigurableEnvironment 中的默认配置
 		String[] parentDefaultProfiles = parent.getDefaultProfiles();
 		if (!ObjectUtils.isEmpty(parentDefaultProfiles)) {
 			synchronized (this.defaultProfiles) {

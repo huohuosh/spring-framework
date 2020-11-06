@@ -34,6 +34,7 @@ public interface ParserContext {
 	 *     Hello #{name.firstName}!
 	 *     #{3 + 4}
 	 * </pre>
+	 * 是否是模板
 	 * @return true if the expression is a template, false otherwise
 	 */
 	boolean isTemplate();

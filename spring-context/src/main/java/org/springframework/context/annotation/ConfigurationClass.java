@@ -220,7 +220,8 @@ final class ConfigurationClass {
 
 	/**
 	 * 校验配置类
-	 * 被 @Configuration 注解的配置类需要被 CGLIB 重新，所有需要配置类可以被重新
+	 * 被 @Configuration 注解的配置类需要被 CGLIB 继承重写
+	 * 所有的 BeanMethod 须可以被重写
 	 * @param problemReporter
 	 */
 	public void validate(ProblemReporter problemReporter) {

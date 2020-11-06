@@ -88,7 +88,9 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 	 */
 	private Expression[] parseExpressions(String expressionString, ParserContext context) throws ParseException {
 		List<Expression> expressions = new ArrayList<>();
+		// 表达式前缀
 		String prefix = context.getExpressionPrefix();
+		// 表达式后缀
 		String suffix = context.getExpressionSuffix();
 		int startIdx = 0;
 
@@ -96,10 +98,13 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 			int prefixIndex = expressionString.indexOf(prefix, startIdx);
 			if (prefixIndex >= startIdx) {
 				// an inner expression was found - this is a composite
+				// 如果前缀位置在 startIdx 之后，则存在常量字符串
 				if (prefixIndex > startIdx) {
 					expressions.add(new LiteralExpression(expressionString.substring(startIdx, prefixIndex)));
 				}
+				// 前缀后的位置
 				int afterPrefixIndex = prefixIndex + prefix.length();
+				// 后缀的位置
 				int suffixIndex = skipToCorrectEndSuffix(suffix, expressionString, afterPrefixIndex);
 				if (suffixIndex == -1) {
 					throw new ParseException(expressionString, prefixIndex,
@@ -111,6 +116,7 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 							"No expression defined within delimiter '" + prefix + suffix +
 							"' at character " + prefixIndex);
 				}
+				// 得到表达式
 				String expr = expressionString.substring(prefixIndex + prefix.length(), suffixIndex);
 				expr = expr.trim();
 				if (expr.isEmpty()) {
@@ -119,10 +125,12 @@ public abstract class TemplateAwareExpressionParser implements ExpressionParser 
 							"' at character " + prefixIndex);
 				}
 				expressions.add(doParseExpression(expr, context));
+				// 开始位置置为后缀缀之后，开始新一轮查找
 				startIdx = suffixIndex + suffix.length();
 			}
 			else {
 				// no more ${expressions} found in string, add rest as static text
+				// 没有找到表达式，加入后缀之后的文本
 				expressions.add(new LiteralExpression(expressionString.substring(startIdx)));
 				startIdx = expressionString.length();
 			}

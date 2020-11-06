@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
  * <p>As of Spring 4.1.2, this class extends {@link EnumerablePropertySource} instead
  * of plain {@link PropertySource}, exposing {@link #getPropertyNames()} based on the
  * accumulated property names from all contained sources (as far as possible).
+ * 支持将若干 PropertySource 进行组合
  *
  * @author Chris Beams
  * @author Juergen Hoeller

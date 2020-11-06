@@ -124,15 +124,21 @@ class ConfigurationClassParser {
 	private final ResourceLoader resourceLoader;
 
 	private final BeanDefinitionRegistry registry;
-
+	/**
+	 * 解析 {@link ComponentScan} 注解
+	 */
 	private final ComponentScanAnnotationParser componentScanParser;
-
+	/**
+	 * 判断 {@link Conditional} 注解条件
+	 */
 	private final ConditionEvaluator conditionEvaluator;
 
 	private final Map<ConfigurationClass, ConfigurationClass> configurationClasses = new LinkedHashMap<>();
 
 	private final Map<String, ConfigurationClass> knownSuperclasses = new HashMap<>();
-
+	/**
+	 * 资源名称，判断是否有处理过
+	 */
 	private final List<String> propertySourceNames = new ArrayList<>();
 
 	private final ImportStack importStack = new ImportStack();
@@ -273,7 +279,10 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @PropertySource annotations
-		// 处理 @PropertySource 注解
+		/**
+		 * 处理 {@link  org.springframework.context.annotation.PropertySource} 注解
+		 * 加入 {@link #environment}
+		 */
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
@@ -287,7 +296,10 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @ComponentScan annotations
-		// 处理 @ComponentScan 注解
+		/**
+		 * 处理 {@link ComponentScan} 注解
+		 * 扫描对应的包，注册 BeanDefinition，如果存在配置类，继续处理
+		 */
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&
@@ -302,6 +314,7 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					// 如果扫描的包里有配置类，继续处理
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
@@ -310,11 +323,17 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations
-		// 处理 @Import 注解
+		/**
+		 * 处理 {@link Import} 注解
+		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations
-		// 处理 @ImportResource 注解（加入 configClass 的 importedResources 属性，后续处理）
+		/**
+		 * 处理 {@link ImportResource} 注解
+		 * 加入 {@link  ConfigurationClass#importedResources}，后续注册 BeanDefinition
+		 * @see ConfigurationClassBeanDefinitionReader#loadBeanDefinitionsForConfigurationClass
+		 */
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {
@@ -327,14 +346,18 @@ class ConfigurationClassParser {
 		}
 
 		// Process individual @Bean methods
-		// 处理 @Bean 注解的方法，添加到配置类的 beanMethod
+		/**
+		 * 处理 {@link Bean} 注解的方法，添加到配置类的 {@link ConfigurationClass#beanMethods}
+		 */
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
 		// Process default methods on interfaces
-		// 处理接口默认方法
+		/**
+		 *  处理接口默认方法
+		 */
 		processInterfaces(configClass, sourceClass);
 
 		// Process superclass, if any
@@ -456,26 +479,48 @@ class ConfigurationClassParser {
 	 * @throws IOException if loading a property source failed
 	 */
 	private void processPropertySource(AnnotationAttributes propertySource) throws IOException {
+		/**
+		 * 得到名称属性
+		 * @see org.springframework.context.annotation.PropertySource#name()
+		 */
 		String name = propertySource.getString("name");
 		if (!StringUtils.hasLength(name)) {
 			name = null;
 		}
+		/**
+		 * 资源编码
+		 * @see org.springframework.context.annotation.PropertySource#encoding()
+		 */
 		String encoding = propertySource.getString("encoding");
 		if (!StringUtils.hasLength(encoding)) {
 			encoding = null;
 		}
+		/**
+		 * 资源路径
+		 * @see org.springframework.context.annotation.PropertySource#value()
+		 */
 		String[] locations = propertySource.getStringArray("value");
 		Assert.isTrue(locations.length > 0, "At least one @PropertySource(value) location is required");
+		/**
+		 * 如果不存在该资源是否忽略
+		 * @see org.springframework.context.annotation.PropertySource#ignoreResourceNotFound()
+		 */
 		boolean ignoreResourceNotFound = propertySource.getBoolean("ignoreResourceNotFound");
 
+		/**
+		 * 工厂类
+		 * @see org.springframework.context.annotation.PropertySource#factory()
+		 */
 		Class<? extends PropertySourceFactory> factoryClass = propertySource.getClass("factory");
 		PropertySourceFactory factory = (factoryClass == PropertySourceFactory.class ?
 				DEFAULT_PROPERTY_SOURCE_FACTORY : BeanUtils.instantiateClass(factoryClass));
 
 		for (String location : locations) {
 			try {
+				// 得到路径，获取资源
 				String resolvedLocation = this.environment.resolveRequiredPlaceholders(location);
 				Resource resource = this.resourceLoader.getResource(resolvedLocation);
+				// 将资源加入到  environment
 				addPropertySource(factory.createPropertySource(name, new EncodedResource(resource, encoding)));
 			}
 			catch (IllegalArgumentException | FileNotFoundException | UnknownHostException ex) {
@@ -494,8 +539,9 @@ class ConfigurationClassParser {
 
 	private void addPropertySource(PropertySource<?> propertySource) {
 		String name = propertySource.getName();
+		// 获取所有的 propertySource
 		MutablePropertySources propertySources = ((ConfigurableEnvironment) this.environment).getPropertySources();
-
+		// 当前资源名称已经存在，两个资源组成 CompositePropertySource
 		if (this.propertySourceNames.contains(name)) {
 			// We've already added a version, we need to extend it
 			PropertySource<?> existing = propertySources.get(name);
@@ -517,11 +563,15 @@ class ConfigurationClassParser {
 				return;
 			}
 		}
-
+		/**
+		 * 下面加入 propertySources 的都是在原来之后，新加入的在上一个加入之前
+		 */
+		// 如果 propertySourceNames 为空，资源加入 propertySources，优先级最低
 		if (this.propertySourceNames.isEmpty()) {
 			propertySources.addLast(propertySource);
 		}
 		else {
+			// 如果 propertySourceNames 为空，资源加入 propertySources,放在前一个资源之前
 			String firstProcessed = this.propertySourceNames.get(this.propertySourceNames.size() - 1);
 			propertySources.addBefore(firstProcessed, propertySource);
 		}
@@ -573,6 +623,12 @@ class ConfigurationClassParser {
 
 	/**
 	 * 处理 {@link Import} 注解类
+	 * 1.判断循环导入
+	 * 2.遍历导入的类
+	 * - 实现 {@link ImportSelector}，调用 {@link ImportSelector#selectImports} 获取导入类继续处理
+	 * - 实现 {@link DeferredImportSelector} 延迟导入，后续处理
+	 * - 实现 {@link ImportBeanDefinitionRegistrar}，加入集合,后续处理, {@link ConfigurationClass#getImportBeanDefinitionRegistrars}
+	 * - 其他按配置类正常处理
 	 * @param configClass
 	 * @param currentSourceClass
 	 * @param importCandidates
@@ -591,7 +647,6 @@ class ConfigurationClassParser {
 		else {
 			this.importStack.push(configClass);
 			try {
-				// 遍历导入的类
 				for (SourceClass candidate : importCandidates) {
 					// 实现 ImportSelector 接口
 					if (candidate.isAssignable(ImportSelector.class)) {

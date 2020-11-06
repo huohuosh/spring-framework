@@ -29,6 +29,8 @@ import java.util.Properties;
  * accessing only {@code String}-based keys and values, in the same fashion as
  * {@link Properties#getProperty} and {@link Properties#setProperty}.
  *
+ * 从 properties 文件加载 PropertySource
+ *
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.1

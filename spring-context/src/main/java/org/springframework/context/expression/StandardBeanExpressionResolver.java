@@ -49,23 +49,37 @@ import org.springframework.util.StringUtils;
  */
 public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 
-	/** Default expression prefix: "#{". */
+	/**
+	 * Default expression prefix: "#{".
+	 * 默认表达式前缀
+	 */
 	public static final String DEFAULT_EXPRESSION_PREFIX = "#{";
 
-	/** Default expression suffix: "}". */
+	/**
+	 * Default expression suffix: "}".
+	 * 默认表达式后缀
+	 */
 	public static final String DEFAULT_EXPRESSION_SUFFIX = "}";
 
 
 	private String expressionPrefix = DEFAULT_EXPRESSION_PREFIX;
 
 	private String expressionSuffix = DEFAULT_EXPRESSION_SUFFIX;
-
+	/**
+	 * 表达式解析器
+	 */
 	private ExpressionParser expressionParser;
-
+	/**
+	 * 表达式缓存
+	 */
 	private final Map<String, Expression> expressionCache = new ConcurrentHashMap<>(256);
-
+	/**
+	 * 评估缓存
+	 */
 	private final Map<BeanExpressionContext, StandardEvaluationContext> evaluationCache = new ConcurrentHashMap<>(8);
-
+	/**
+	 * 解析上下文
+	 */
 	private final ParserContext beanExpressionParserContext = new ParserContext() {
 		@Override
 		public boolean isTemplate() {
@@ -133,17 +147,21 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	@Override
 	@Nullable
 	public Object evaluate(@Nullable String value, BeanExpressionContext evalContext) throws BeansException {
+		// 空字符串返回
 		if (!StringUtils.hasLength(value)) {
 			return value;
 		}
 		try {
+			// 从缓存中读取表达式
 			Expression expr = this.expressionCache.get(value);
+			// 不存在解析表达式，放入缓存
 			if (expr == null) {
 				expr = this.expressionParser.parseExpression(value, this.beanExpressionParserContext);
 				this.expressionCache.put(value, expr);
 			}
 			StandardEvaluationContext sec = this.evaluationCache.get(evalContext);
 			if (sec == null) {
+				// 初始化解析上下文
 				sec = new StandardEvaluationContext(evalContext);
 				sec.addPropertyAccessor(new BeanExpressionContextAccessor());
 				sec.addPropertyAccessor(new BeanFactoryAccessor());
@@ -158,6 +176,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 				customizeEvaluationContext(sec);
 				this.evaluationCache.put(evalContext, sec);
 			}
+			// 解析表达式
 			return expr.getValue(sec);
 		}
 		catch (Throwable ex) {

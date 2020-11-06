@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link PropertySource} that reads keys and values from a {@code Map} object.
+ * 包装一个 Map 为 PropertySource
  *
  * @author Chris Beams
  * @author Juergen Hoeller

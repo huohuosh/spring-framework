@@ -36,6 +36,8 @@ import org.springframework.util.StringUtils;
  * {@link org.springframework.core.io.Resource#getFilename() getFilename()} method must
  * return a non-{@code null} value that ends in {@code ".xml"}.
  *
+ * 从 Resource 加载 PropertySource
+ *
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.1

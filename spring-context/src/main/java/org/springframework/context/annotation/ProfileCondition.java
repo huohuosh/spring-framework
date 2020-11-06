@@ -23,6 +23,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * {@link Condition} that matches based on the value of a {@link Profile @Profile}
  * annotation.
+ * 基于 Profile 注解判断配置是否需要跳过
  *
  * @author Chris Beams
  * @author Phillip Webb

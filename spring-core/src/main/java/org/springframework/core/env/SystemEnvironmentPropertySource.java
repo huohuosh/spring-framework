@@ -56,6 +56,8 @@ import org.springframework.util.Assert;
  * <p>This property source is included by default in {@link StandardEnvironment}
  * and all its subclasses.
  *
+ * 从系统环境变量加载 PropertySource
+ *
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.1

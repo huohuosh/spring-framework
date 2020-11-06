@@ -295,10 +295,12 @@ public abstract class WebApplicationContextUtils {
 			@Nullable ServletContext servletContext, @Nullable ServletConfig servletConfig) {
 
 		Assert.notNull(sources, "'propertySources' must not be null");
+		// 设置替换 servletContextInitParams 为 ServletContextPropertySource
 		String name = StandardServletEnvironment.SERVLET_CONTEXT_PROPERTY_SOURCE_NAME;
 		if (servletContext != null && sources.contains(name) && sources.get(name) instanceof StubPropertySource) {
 			sources.replace(name, new ServletContextPropertySource(name, servletContext));
 		}
+		// 设置替换 servletConfigInitParams 为 ServletConfigPropertySource
 		name = StandardServletEnvironment.SERVLET_CONFIG_PROPERTY_SOURCE_NAME;
 		if (servletConfig != null && sources.contains(name) && sources.get(name) instanceof StubPropertySource) {
 			sources.replace(name, new ServletConfigPropertySource(name, servletConfig));
