@@ -570,6 +570,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Allow post-processors to modify the merged bean definition.
+		/**
+		 * 3.调用 {@link MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition}
+		 * 将 {@link org.springframework.beans.factory.annotation.Autowired}
+		 * 	  {@link org.springframework.beans.factory.annotation.Value}
+		 * 	  {@link javax.annotation.Resource} 等注解构建 InjectionMetadata
+		 * 将相关数据保存到 {@link RootBeanDefinition#externallyManagedConfigMembers} 中
+ 		 */ 
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -585,6 +592,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		// 4. TODO
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -596,7 +604,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Initialize the bean instance.
-		// 填充属性、初始化 bean 实例
+		// 5.填充属性、初始化 bean 实例
 		Object exposedObject = bean;
 		try {
 			populateBean(beanName, mbd, instanceWrapper);

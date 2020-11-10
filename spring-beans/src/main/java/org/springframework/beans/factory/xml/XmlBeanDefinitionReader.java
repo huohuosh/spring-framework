@@ -124,7 +124,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	private ReaderEventListener eventListener = new EmptyReaderEventListener();
 
 	private SourceExtractor sourceExtractor = new NullSourceExtractor();
-
+	/**
+	 * xml 命名空间处理
+	 * @see NamespaceHandler
+	 */
 	@Nullable
 	private NamespaceHandlerResolver namespaceHandlerResolver;
 	/**
