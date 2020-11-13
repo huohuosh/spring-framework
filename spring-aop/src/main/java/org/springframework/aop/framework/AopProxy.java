@@ -35,6 +35,7 @@ public interface AopProxy {
 	 * Create a new proxy object.
 	 * <p>Uses the AopProxy's default class loader (if necessary for proxy creation):
 	 * usually, the thread context class loader.
+	 * 创建一个代理对象（为目标对象创建一个代理对象）
 	 * @return the new proxy object (never {@code null})
 	 * @see Thread#getContextClassLoader()
 	 */
@@ -46,6 +47,7 @@ public interface AopProxy {
 	 * {@code null} will simply be passed down and thus lead to the low-level
 	 * proxy facility's default, which is usually different from the default chosen
 	 * by the AopProxy implementation's {@link #getProxy()} method.
+	 * 使用给定的 classLoader 创建一个代理对象
 	 * @param classLoader the class loader to create the proxy with
 	 * (or {@code null} for the low-level proxy facility's default)
 	 * @return the new proxy object (never {@code null})

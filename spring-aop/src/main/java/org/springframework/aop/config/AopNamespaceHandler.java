@@ -17,6 +17,8 @@
 package org.springframework.aop.config;
 
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
+import org.springframework.aop.aspectj.autoproxy.AspectJAwareAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
@@ -62,7 +64,15 @@ public class AopNamespaceHandler extends NamespaceHandlerSupport {
 	@Override
 	public void init() {
 		// In 2.0 XSD as well as in 2.1 XSD.
+		/**
+		 * 基于 xml 的 aop 配置处理
+		 * @see AspectJAwareAdvisorAutoProxyCreator
+		 */
 		registerBeanDefinitionParser("config", new ConfigBeanDefinitionParser());
+		/**
+		 * 基于注解的 aop 配置处理
+		 * @see AnnotationAwareAspectJAutoProxyCreator
+		 */
 		registerBeanDefinitionParser("aspectj-autoproxy", new AspectJAutoProxyBeanDefinitionParser());
 		registerBeanDefinitionDecorator("scoped-proxy", new ScopedProxyBeanDefinitionDecorator());
 

@@ -242,6 +242,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+		// 如果没有 beanName，返回 beanClass, 如果 bean 是 FactoryBean，返回加 '&'
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {

@@ -51,6 +51,7 @@ import org.springframework.util.xml.DomUtils;
 
 /**
  * {@link BeanDefinitionParser} for the {@code <aop:config>} tag.
+ * 解析 <aop:config> 配置
  *
  * @author Rob Harrop
  * @author Juergen Hoeller
@@ -102,18 +103,22 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 		CompositeComponentDefinition compositeDef =
 				new CompositeComponentDefinition(element.getTagName(), parserContext.extractSource(element));
 		parserContext.pushContainingComponent(compositeDef);
-
+		// 根据配置注册 AspectJAwareAdvisorAutoProxyCreator BeanDefinition
 		configureAutoProxyCreator(parserContext, element);
 
+		// 解析 <aop:config> 子元素
 		List<Element> childElts = DomUtils.getChildElements(element);
 		for (Element elt: childElts) {
 			String localName = parserContext.getDelegate().getLocalName(elt);
+			// 解析 <aop:pointcut>
 			if (POINTCUT.equals(localName)) {
 				parsePointcut(elt, parserContext);
 			}
+			// 解析 <aop:advisor>
 			else if (ADVISOR.equals(localName)) {
 				parseAdvisor(elt, parserContext);
 			}
+			// 解析 <aop:aspect>
 			else if (ASPECT.equals(localName)) {
 				parseAspect(elt, parserContext);
 			}
@@ -434,7 +439,9 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 	 * Pointcut with the BeanDefinitionRegistry.
 	 */
 	private AbstractBeanDefinition parsePointcut(Element pointcutElement, ParserContext parserContext) {
+		// 获取 id 属性
 		String id = pointcutElement.getAttribute(ID);
+		// 获取 expression 属性
 		String expression = pointcutElement.getAttribute(EXPRESSION);
 
 		AbstractBeanDefinition pointcutDefinition = null;
