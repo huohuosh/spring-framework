@@ -72,6 +72,7 @@ public class AopNamespaceHandler extends NamespaceHandlerSupport {
 		/**
 		 * 基于注解的 aop 配置处理
 		 * @see AnnotationAwareAspectJAutoProxyCreator
+		 * @see org.springframework.context.annotation.EnableAspectJAutoProxy
 		 */
 		registerBeanDefinitionParser("aspectj-autoproxy", new AspectJAutoProxyBeanDefinitionParser());
 		registerBeanDefinitionDecorator("scoped-proxy", new ScopedProxyBeanDefinitionDecorator());
