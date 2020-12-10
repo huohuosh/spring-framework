@@ -61,15 +61,26 @@ import org.springframework.lang.Nullable;
  */
 public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Cloneable {
 
+	/**
+	 * 生成的代理对象
+	 */
 	protected final Object proxy;
-
+	/**
+	 * 被代理的目标对象
+	 */
 	@Nullable
 	protected final Object target;
-
+	/**
+	 * 被调用的方法
+	 */
 	protected final Method method;
-
+	/**
+	 * 调用方法传入参数
+	 */
 	protected Object[] arguments;
-
+	/**
+	 * 目标对象类型
+	 */
 	@Nullable
 	private final Class<?> targetClass;
 
@@ -82,12 +93,14 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	/**
 	 * List of MethodInterceptor and InterceptorAndDynamicMethodMatcher
 	 * that need dynamic checks.
+	 * 被调用的方法上匹配的 MethodInterceptor and InterceptorAndDynamicMethodMatcher 列表
 	 */
 	protected final List<?> interceptorsAndDynamicMethodMatchers;
 
 	/**
 	 * Index from 0 of the current interceptor we're invoking.
 	 * -1 until we invoke: then the current interceptor.
+	 * 当前正在调用的连接器索引
 	 */
 	private int currentInterceptorIndex = -1;
 
@@ -159,6 +172,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	@Nullable
 	public Object proceed() throws Throwable {
 		// We start with an index of -1 and increment early.
+		// 拦截器都执行完毕之后，通过反射调用目标对象中的方法
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 			return invokeJoinpoint();
 		}
@@ -171,12 +185,15 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 			InterceptorAndDynamicMethodMatcher dm =
 					(InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
 			Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
+			// 判断动态拦截器是否需要执行
 			if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
+				// 执行当前拦截器的调用
 				return dm.interceptor.invoke(this);
 			}
 			else {
 				// Dynamic matching failed.
 				// Skip this interceptor and invoke the next in the chain.
+				// 如果不匹配进入下一个拦截器
 				return proceed();
 			}
 		}

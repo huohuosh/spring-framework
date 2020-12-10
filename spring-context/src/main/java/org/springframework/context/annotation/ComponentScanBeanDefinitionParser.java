@@ -80,12 +80,14 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
+		// 获取 base-package 属性
 		String basePackage = element.getAttribute(BASE_PACKAGE_ATTRIBUTE);
 		basePackage = parserContext.getReaderContext().getEnvironment().resolvePlaceholders(basePackage);
 		String[] basePackages = StringUtils.tokenizeToStringArray(basePackage,
 				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
 		// Actually scan for bean definitions and register them.
+		// 创建 ClassPathBeanDefinitionScanner，扫描对应的包，注册扫描的 BeanDefinition
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
 		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
 		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
@@ -95,6 +97,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 	protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
 		boolean useDefaultFilters = true;
+		// use-default-filters 是否使用默认过滤规则
 		if (element.hasAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE)) {
 			useDefaultFilters = Boolean.valueOf(element.getAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE));
 		}
@@ -104,24 +107,27 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		scanner.setBeanDefinitionDefaults(parserContext.getDelegate().getBeanDefinitionDefaults());
 		scanner.setAutowireCandidatePatterns(parserContext.getDelegate().getAutowireCandidatePatterns());
 
+		// resource-pattern 资源匹配规则
 		if (element.hasAttribute(RESOURCE_PATTERN_ATTRIBUTE)) {
 			scanner.setResourcePattern(element.getAttribute(RESOURCE_PATTERN_ATTRIBUTE));
 		}
 
 		try {
+			// beanName 生成器
 			parseBeanNameGenerator(element, scanner);
 		}
 		catch (Exception ex) {
 			parserContext.getReaderContext().error(ex.getMessage(), parserContext.extractSource(element), ex.getCause());
 		}
 
+		// scope 设置
 		try {
 			parseScope(element, scanner);
 		}
 		catch (Exception ex) {
 			parserContext.getReaderContext().error(ex.getMessage(), parserContext.extractSource(element), ex.getCause());
 		}
-
+		// 设置 filter
 		parseTypeFilters(element, scanner, parserContext);
 
 		return scanner;
@@ -143,6 +149,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		}
 
 		// Register annotation config processors, if necessary.
+		// 如果 annotation-config 属性为 true,注册注解相关的 PostProcessor
 		boolean annotationConfig = true;
 		if (element.hasAttribute(ANNOTATION_CONFIG_ATTRIBUTE)) {
 			annotationConfig = Boolean.valueOf(element.getAttribute(ANNOTATION_CONFIG_ATTRIBUTE));

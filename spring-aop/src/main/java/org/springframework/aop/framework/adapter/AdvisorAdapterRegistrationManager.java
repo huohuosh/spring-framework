@@ -27,6 +27,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * in application context along with "non-native" Spring AdvisorAdapters
  * that need to be "recognized" by Spring's AOP framework.
  *
+ * 注册 AdvisorAdapter 的 BeanPostProcessor
+ *
  * @author Dmitriy Kopylenko
  * @author Juergen Hoeller
  * @since 27.02.2004

@@ -18,6 +18,7 @@ package org.springframework.aop.framework.adapter;
 
 /**
  * Singleton to publish a shared DefaultAdvisorAdapterRegistry instance.
+ * 共享单例的 DefaultAdvisorAdapterRegistry
  *
  * @author Rod Johnson
  * @author Juergen Hoeller

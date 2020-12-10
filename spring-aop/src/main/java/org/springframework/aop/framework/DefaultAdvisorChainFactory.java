@@ -54,7 +54,9 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		// This is somewhat tricky... We have to process introductions first,
 		// but we need to preserve order in the ultimate list.
 		AdvisorAdapterRegistry registry = GlobalAdvisorAdapterRegistry.getInstance();
+		// 得到所有的 Advisor
 		Advisor[] advisors = config.getAdvisors();
+		// 存储 MethodInterceptor 或者 InterceptorAndDynamicMethodMatcher
 		List<Object> interceptorList = new ArrayList<>(advisors.length);
 		Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
 		Boolean hasIntroductions = null;
@@ -63,9 +65,13 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 			if (advisor instanceof PointcutAdvisor) {
 				// Add it conditionally.
 				PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
+				// 已经过滤过了或者匹配 ClassFilter
 				if (config.isPreFiltered() || pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
+					// 获取 MethodMatcher 进行匹配
 					MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
 					boolean match;
+					// 判断是否是 IntroductionAwareMethodMatcher
+					// 如果是调用对应方法，如果不是进行静态匹配
 					if (mm instanceof IntroductionAwareMethodMatcher) {
 						if (hasIntroductions == null) {
 							hasIntroductions = hasMatchingIntroductions(advisors, actualClass);
@@ -75,8 +81,10 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 					else {
 						match = mm.matches(method, actualClass);
 					}
+					// 如果匹配，将对应的拦截器加入集合
 					if (match) {
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
+						// 动态匹配
 						if (mm.isRuntime()) {
 							// Creating a new object instance in the getInterceptors() method
 							// isn't a problem as we normally cache created chains.
@@ -84,6 +92,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 								interceptorList.add(new InterceptorAndDynamicMethodMatcher(interceptor, mm));
 							}
 						}
+						// 静态匹配
 						else {
 							interceptorList.addAll(Arrays.asList(interceptors));
 						}

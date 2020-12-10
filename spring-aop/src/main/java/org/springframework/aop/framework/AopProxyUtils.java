@@ -116,9 +116,13 @@ public abstract class AopProxyUtils {
 	 * @see DecoratingProxy
 	 */
 	static Class<?>[] completeProxiedInterfaces(AdvisedSupport advised, boolean decoratingProxy) {
+		// 获取代理配置中需要被代理的接口
 		Class<?>[] specifiedInterfaces = advised.getProxiedInterfaces();
 		if (specifiedInterfaces.length == 0) {
 			// No user-specified interfaces: check whether target class is an interface.
+			// 用户没有指定代理接口
+			// 判断被代理类是否是接口，如果是，加入集合
+			// 判断被代理类是否是 jdk 动态代理创建的类，如果是获取目标类的所有接口加入集合
 			Class<?> targetClass = advised.getTargetClass();
 			if (targetClass != null) {
 				if (targetClass.isInterface()) {
@@ -130,8 +134,11 @@ public abstract class AopProxyUtils {
 				specifiedInterfaces = advised.getProxiedInterfaces();
 			}
 		}
+		// 判断 SpringProxy 接口是否已经在被代理的接口中
 		boolean addSpringProxy = !advised.isInterfaceProxied(SpringProxy.class);
+		// 判断 Advised 接口是否已经在被代理的接口中
 		boolean addAdvised = !advised.isOpaque() && !advised.isInterfaceProxied(Advised.class);
+		// 判断 DecoratingProxy 接口是否已经在被代理的接口中
 		boolean addDecoratingProxy = (decoratingProxy && !advised.isInterfaceProxied(DecoratingProxy.class));
 		int nonUserIfcCount = 0;
 		if (addSpringProxy) {
@@ -143,6 +150,7 @@ public abstract class AopProxyUtils {
 		if (addDecoratingProxy) {
 			nonUserIfcCount++;
 		}
+		// 根据条件集合中加入 SpringProxy.class、Advised.class 和 DecoratingProxy.class，返回
 		Class<?>[] proxiedInterfaces = new Class<?>[specifiedInterfaces.length + nonUserIfcCount];
 		System.arraycopy(specifiedInterfaces, 0, proxiedInterfaces, 0, specifiedInterfaces.length);
 		int index = specifiedInterfaces.length;
@@ -224,6 +232,7 @@ public abstract class AopProxyUtils {
 		if (ObjectUtils.isEmpty(arguments)) {
 			return new Object[0];
 		}
+		// 是否有可变参数
 		if (method.isVarArgs()) {
 			Class<?>[] paramTypes = method.getParameterTypes();
 			if (paramTypes.length == arguments.length) {

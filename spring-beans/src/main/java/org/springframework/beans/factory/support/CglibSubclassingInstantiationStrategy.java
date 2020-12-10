@@ -269,6 +269,7 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 	/**
 	 * CGLIB MethodInterceptor to override methods, replacing them with an
 	 * implementation that returns a bean looked up in the container.
+	 * {@link LookupOverride} 处理拦截器，在 BeanFactory 查找对应的返回类型
 	 */
 	private static class LookupOverrideMethodInterceptor extends CglibIdentitySupport implements MethodInterceptor {
 
@@ -300,6 +301,8 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 	/**
 	 * CGLIB MethodInterceptor to override methods, replacing them with a call
 	 * to a generic MethodReplacer.
+	 * {@link ReplaceOverride} 处理拦截器，在 BeanFactory 查找对应 MethodReplacer，执行方法
+	 * @see MethodReplacer
 	 */
 	private static class ReplaceOverrideMethodInterceptor extends CglibIdentitySupport implements MethodInterceptor {
 
@@ -315,6 +318,7 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			ReplaceOverride ro = (ReplaceOverride) getBeanDefinition().getMethodOverrides().getOverride(method);
 			Assert.state(ro != null, "ReplaceOverride not found");
 			// TODO could cache if a singleton for minor performance optimization
+
 			MethodReplacer mr = this.owner.getBean(ro.getMethodReplacerBeanName(), MethodReplacer.class);
 			return mr.reimplement(obj, method, args);
 		}

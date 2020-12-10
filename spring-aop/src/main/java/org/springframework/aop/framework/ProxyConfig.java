@@ -33,15 +33,33 @@ public class ProxyConfig implements Serializable {
 	/** use serialVersionUID from Spring 1.2 for interoperability. */
 	private static final long serialVersionUID = -8409359707199703185L;
 
-
+	/**
+	 * 标记是否直接对目标类进行代理，而不是通过接口产生代理
+	 */
 	private boolean proxyTargetClass = false;
-
+	/**
+	 * 是否对生成代理策略进行优化
+	 * true : 进行优化，如果有接口就代理接口(使用JDK动态代理)，没有接口代理类（CGLIB代理）
+	 * true : 在生成代理对象之后，如果对代理配置进行了修改，已经创建的代理对象也不会获取修改之后的代理配置
+	 * false :不进行优化
+	 * 如果 exposeProxy 设置为 true，即使 optimize 为 true 也会被忽略
+	 */
 	private boolean optimize = false;
-
+	/**
+	 * 标记是否需要阻止通过该配置创建的代理对象转换为 Advised 类型
+	 * 默认值为 false，表示代理对象可以被转换为 Advised 类型
+	 */
 	boolean opaque = false;
-
+	/**
+	 * 标记代理对象是否应该被 aop 框架通过 AopContext 以 ThreadLocal 的形式暴露出去
+	 * 当一个代理对象需要调用它【自己】的另外一个代理方法时，这个属性将非常有用.默认是是 false，以避免不必要的拦截
+	 * @see AopContext#setCurrentProxy(Object)
+	 */
 	boolean exposeProxy = false;
-
+	/**
+	 * 标记是否需要冻结代理对象，即在代理对象生成之后，是否允许对其进行修改，默认为 false
+	 * 我们不希望调用方修改转换成 Advised 对象之后的代理对象时，就可以设置为 true 给冻结上即可
+	 */
 	private boolean frozen = false;
 
 

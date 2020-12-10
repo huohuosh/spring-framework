@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
  * Simple Pointcut that looks for a specific Java 5 annotation
  * being present on a {@link #forClassAnnotation class} or
  * {@link #forMethodAnnotation method}.
+ * 通过注解进行过滤或匹配的切入点
  *
  * @author Juergen Hoeller
  * @since 2.0
@@ -35,9 +36,13 @@ import org.springframework.util.Assert;
  * @see AnnotationMethodMatcher
  */
 public class AnnotationMatchingPointcut implements Pointcut {
-
+	/**
+	 * @see AnnotationClassFilter
+	 */
 	private final ClassFilter classFilter;
-
+	/**
+	 * @see AnnotationMethodMatcher
+	 */
 	private final MethodMatcher methodMatcher;
 
 

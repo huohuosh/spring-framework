@@ -92,6 +92,7 @@ public class ScopedProxyFactoryBean extends ProxyConfig
 
 		this.scopedTargetSource.setBeanFactory(beanFactory);
 
+		// 创建 ProxyFactory
 		ProxyFactory pf = new ProxyFactory();
 		pf.copyFrom(this);
 		pf.setTargetSource(this.scopedTargetSource);
@@ -103,6 +104,7 @@ public class ScopedProxyFactoryBean extends ProxyConfig
 					"': Target type could not be determined at the time of proxy creation.");
 		}
 		if (!isProxyTargetClass() || beanType.isInterface() || Modifier.isPrivate(beanType.getModifiers())) {
+			// 设置要代理的源接口
 			pf.setInterfaces(ClassUtils.getAllInterfacesForClass(beanType, cbf.getBeanClassLoader()));
 		}
 

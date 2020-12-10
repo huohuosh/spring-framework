@@ -106,6 +106,10 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner,
 			final Constructor<?> ctor, Object... args) {
 
+		/**
+		 * 包含 lookup-method 或 replaced-method 会被 Cglib 增强来拦截这两个方法调用
+		 * 不包含的直接实例化
+ 		 */
 		if (!bd.hasMethodOverrides()) {
 			if (System.getSecurityManager() != null) {
 				// use own privileged to change accessibility (when security is on)

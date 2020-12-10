@@ -20,6 +20,8 @@ package org.springframework.aop;
  * Superinterface for all Advisors that are driven by a pointcut.
  * This covers nearly all advisors except introduction advisors,
  * for which method-level matching doesn't apply.
+ * 切点通知器
+ * 主要为了拦截方法，这种增强属于方法级别的增强
  *
  * @author Rod Johnson
  */

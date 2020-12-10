@@ -24,6 +24,9 @@ package org.springframework.aop;
  *
  * <p>Introduction is the implementation of additional interfaces
  * (not implemented by a target) via AOP advice.
+ * 引介通知器
+ * 主要为了给targetClass追加接口（或者说追加更多的方法）
+ * 这种增强属于类级别的增强
  *
  * @author Rod Johnson
  * @since 04.04.2003

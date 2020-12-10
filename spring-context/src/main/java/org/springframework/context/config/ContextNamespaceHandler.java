@@ -18,6 +18,8 @@ package org.springframework.context.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.context.annotation.AnnotationConfigBeanDefinitionParser;
+import org.springframework.context.annotation.AnnotationConfigUtils;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
 
 /**
@@ -34,9 +36,22 @@ public class ContextNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 		registerBeanDefinitionParser("property-placeholder", new PropertyPlaceholderBeanDefinitionParser());
 		registerBeanDefinitionParser("property-override", new PropertyOverrideBeanDefinitionParser());
+		/**
+		 * 注册注解相关的 PostProcessor
+		 * @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+		 */
 		registerBeanDefinitionParser("annotation-config", new AnnotationConfigBeanDefinitionParser());
+		/**
+		 * 扫描包注册相关的 BeanDefinition
+		 * 如果 annotation-config 属性为 true,注册注解相关的 PostProcessor
+		 * @see ComponentScan
+		 * @see org.springframework.context.annotation.ComponentScanAnnotationParser
+		 */
 		registerBeanDefinitionParser("component-scan", new ComponentScanBeanDefinitionParser());
 		registerBeanDefinitionParser("load-time-weaver", new LoadTimeWeaverBeanDefinitionParser());
+		/**
+		 * 注册 {@link org.springframework.beans.factory.aspectj.AnnotationBeanConfigurerAspect}
+		 */
 		registerBeanDefinitionParser("spring-configured", new SpringConfiguredBeanDefinitionParser());
 		registerBeanDefinitionParser("mbean-export", new MBeanExportBeanDefinitionParser());
 		registerBeanDefinitionParser("mbean-server", new MBeanServerBeanDefinitionParser());

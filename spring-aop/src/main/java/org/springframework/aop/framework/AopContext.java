@@ -34,6 +34,7 @@ import org.springframework.lang.Nullable;
  * to resources on the invocation. However, this approach should not be used when there is
  * a reasonable alternative, as it makes application code dependent on usage under AOP and
  * the Spring AOP framework in particular.
+ * 设置当前代理对象到 ThreadLocal，或从中取出当前代理
  *
  * @author Rod Johnson
  * @author Juergen Hoeller

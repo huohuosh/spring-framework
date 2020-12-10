@@ -49,6 +49,9 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyCreator {
 
+	/**
+	 * 从  BeanFactory 获取 Advisor 的帮助类
+	 */
 	@Nullable
 	private BeanFactoryAdvisorRetrievalHelper advisorRetrievalHelper;
 
@@ -72,7 +75,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	@Nullable
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
-
+		// 获取当前类可用的 Advisor
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
@@ -91,9 +94,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+		// 获取所有的 Advisor
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		// 根据当前类过滤可以使用的 Advisor
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+		// 将 ExposeInvocationInterceptor#ADVISOR 添加到 eligibleAdvisors 头部
 		extendAdvisors(eligibleAdvisors);
+		// 排序返回
 		if (!eligibleAdvisors.isEmpty()) {
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}

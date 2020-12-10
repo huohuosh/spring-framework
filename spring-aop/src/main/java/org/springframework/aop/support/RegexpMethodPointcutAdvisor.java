@@ -45,9 +45,14 @@ import org.springframework.util.ObjectUtils;
 @SuppressWarnings("serial")
 public class RegexpMethodPointcutAdvisor extends AbstractGenericPointcutAdvisor {
 
+	/**
+	 * 匹配的正则表达式。如 find.* 表示所有方法名以 find 开始的方法
+	 */
 	@Nullable
 	private String[] patterns;
-
+	/**
+	 * @see JdkRegexpMethodPointcut
+	 */
 	@Nullable
 	private AbstractRegexpMethodPointcut pointcut;
 

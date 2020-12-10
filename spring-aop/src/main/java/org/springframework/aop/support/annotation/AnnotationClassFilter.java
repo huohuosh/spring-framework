@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 /**
  * Simple ClassFilter that looks for a specific Java 5 annotation
  * being present on a class.
+ * 通过注解判断的类过滤器
  *
  * @author Juergen Hoeller
  * @since 2.0
@@ -32,8 +33,13 @@ import org.springframework.util.Assert;
  */
 public class AnnotationClassFilter implements ClassFilter {
 
+	/**
+	 * 注解类型
+	 */
 	private final Class<? extends Annotation> annotationType;
-
+	/**
+	 * 是否检查继承
+	 */
 	private final boolean checkInherited;
 
 
@@ -59,7 +65,11 @@ public class AnnotationClassFilter implements ClassFilter {
 		this.checkInherited = checkInherited;
 	}
 
-
+	/**
+	 * 判断给定类是否被当前注解类型注解
+	 * @param clazz the candidate target class
+	 * @return
+	 */
 	@Override
 	public boolean matches(Class<?> clazz) {
 		return (this.checkInherited ? AnnotatedElementUtils.hasAnnotation(clazz, this.annotationType) :

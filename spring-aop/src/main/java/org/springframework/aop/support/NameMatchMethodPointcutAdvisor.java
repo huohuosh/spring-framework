@@ -24,6 +24,7 @@ import org.springframework.aop.Pointcut;
 /**
  * Convenient class for name-match method pointcuts that hold an Advice,
  * making them an Advisor.
+ * pointcut 为 NameMatchMethodPointcut 的 Advisor
  *
  * @author Juergen Hoeller
  * @author Rob Harrop

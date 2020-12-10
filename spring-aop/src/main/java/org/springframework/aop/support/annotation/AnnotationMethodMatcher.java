@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * Simple MethodMatcher that looks for a specific Java 5 annotation
  * being present on a method (checking both the method on the invoked
  * interface, if any, and the corresponding method on the target class).
+ * 通过注解判断的方法匹配器
  *
  * @author Juergen Hoeller
  * @author Sam Brannen
@@ -37,8 +38,13 @@ import org.springframework.util.Assert;
  */
 public class AnnotationMethodMatcher extends StaticMethodMatcher {
 
+	/**
+	 * 注解类型
+	 */
 	private final Class<? extends Annotation> annotationType;
-
+	/**
+	 * 是否检查继承
+	 */
 	private final boolean checkInherited;
 
 
@@ -69,14 +75,17 @@ public class AnnotationMethodMatcher extends StaticMethodMatcher {
 
 	@Override
 	public boolean matches(Method method, Class<?> targetClass) {
+		// 如果方法被当前 annotationType 注解所注解，返回 true
 		if (matchesMethod(method)) {
 			return true;
 		}
 		// Proxy classes never have annotations on their redeclared methods.
+		// 代理类返回 false
 		if (Proxy.isProxyClass(targetClass)) {
 			return false;
 		}
 		// The method may be on an interface, so let's check on the target class as well.
+		// 如果方法是一个接口，查找实现类，判断是否匹配
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 		return (specificMethod != method && matchesMethod(specificMethod));
 	}

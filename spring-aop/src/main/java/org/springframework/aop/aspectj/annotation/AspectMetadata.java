@@ -37,6 +37,7 @@ import org.springframework.aop.support.ComposablePointcut;
  *
  * <p>Uses AspectJ 5 AJType reflection API, enabling us to work with different
  * AspectJ instantiation models such as "singleton", "pertarget" and "perthis".
+ * 切面的元数据
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
@@ -50,6 +51,7 @@ public class AspectMetadata implements Serializable {
 	 * The name of this aspect as defined to Spring (the bean name) -
 	 * allows us to determine if two pieces of advice come from the
 	 * same aspect and hence their relative precedence.
+	 * 切面名称
 	 */
 	private final String aspectName;
 

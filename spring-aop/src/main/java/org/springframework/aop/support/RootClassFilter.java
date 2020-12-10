@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple ClassFilter implementation that passes classes (and optionally subclasses).
+ * 通过判断目标类是否是指定类型（或其子类型），决定是否匹配
  *
  * @author Rod Johnson
  * @author Sam Brannen

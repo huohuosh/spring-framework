@@ -23,6 +23,7 @@ import org.springframework.aop.MethodMatcher;
 /**
  * Internal framework class, combining a MethodInterceptor instance
  * with a MethodMatcher for use as an element in the advisor chain.
+ * 包含 MethodInterceptor 和 动态 MethodMatcher，用于 advisor 链
  *
  * @author Rod Johnson
  */

@@ -25,6 +25,7 @@ import org.springframework.aop.Pointcut;
  * implement MethodMatcher interface, but subclasses
  * will want to be pointcuts. The getClassFilter() method can
  * be overridden to customize ClassFilter behaviour as well.
+ * 动态态匹配 Pointcut 抽象类，默认 ClassFilter 为 {@link ClassFilter#TRUE}
  *
  * @author Rod Johnson
  */

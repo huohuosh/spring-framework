@@ -42,6 +42,8 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	/**
 	 * This should run after all other processors, so that it can just add
 	 * an advisor to existing proxies rather than double-proxy.
+	 * AOP的自动代理创建器必须在所有的别的 processors之后执行，
+	 * 以确保它可以代理到所有的小伙伴们，即使需要双重代理得那种
 	 */
 	private int order = Ordered.LOWEST_PRECEDENCE;
 
@@ -98,13 +100,20 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * if appropriate.
 	 * <p>Calls {@link #isConfigurationCallbackInterface} and {@link #isInternalLanguageInterface}
 	 * to filter for reasonable proxy interfaces, falling back to a target-class proxy otherwise.
+	 * 如果目标类没有实现接口直接就是 Cglib 代理
 	 * @param beanClass the class of the bean
 	 * @param proxyFactory the ProxyFactory for the bean
 	 */
 	protected void evaluateProxyInterfaces(Class<?> beanClass, ProxyFactory proxyFactory) {
+		// 找到该类实现的所有接口
 		Class<?>[] targetInterfaces = ClassUtils.getAllInterfacesForClass(beanClass, getProxyClassLoader());
+		// 是否有合适的代理接口
 		boolean hasReasonableProxyInterface = false;
 		for (Class<?> ifc : targetInterfaces) {
+			// 接口不是容器内部回调接口
+			// 接口不是内部语言接口
+			// 接口存在方法
+			// 以上满足设置 hasReasonableProxyInterface 为 true
 			if (!isConfigurationCallbackInterface(ifc) && !isInternalLanguageInterface(ifc) &&
 					ifc.getMethods().length > 0) {
 				hasReasonableProxyInterface = true;

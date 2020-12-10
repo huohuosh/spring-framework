@@ -37,6 +37,7 @@ public interface AdvisorAdapterRegistry {
 	 * {@link org.springframework.aop.MethodBeforeAdvice},
 	 * {@link org.springframework.aop.AfterReturningAdvice},
 	 * {@link org.springframework.aop.ThrowsAdvice}.
+	 * 包装给定的通知，返回 Advisor
 	 * @param advice an object that should be an advice
 	 * @return an Advisor wrapping the given advice (never {@code null};
 	 * if the advice parameter is an Advisor, it is to be returned as-is)
@@ -50,6 +51,7 @@ public interface AdvisorAdapterRegistry {
 	 * given Advisor in an interception-based framework.
 	 * <p>Don't worry about the pointcut associated with the {@link Advisor}, if it is
 	 * a {@link org.springframework.aop.PointcutAdvisor}: just return an interceptor.
+	 * 返回给定 Advisor 的拦截器
 	 * @param advisor the Advisor to find an interceptor for
 	 * @return an array of MethodInterceptors to expose this Advisor's behavior
 	 * @throws UnknownAdviceTypeException if the Advisor type is
@@ -61,6 +63,7 @@ public interface AdvisorAdapterRegistry {
 	 * Register the given {@link AdvisorAdapter}. Note that it is not necessary to register
 	 * adapters for an AOP Alliance Interceptors or Spring Advices: these must be
 	 * automatically recognized by an {@code AdvisorAdapterRegistry} implementation.
+	 * 注册 AdvisorAdapter
 	 * @param adapter an AdvisorAdapter that understands particular Advisor or Advice types
 	 */
 	void registerAdvisorAdapter(AdvisorAdapter adapter);

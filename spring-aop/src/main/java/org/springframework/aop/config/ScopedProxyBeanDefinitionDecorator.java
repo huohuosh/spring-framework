@@ -42,6 +42,7 @@ class ScopedProxyBeanDefinitionDecorator implements BeanDefinitionDecorator {
 	@Override
 	public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext parserContext) {
 		boolean proxyTargetClass = true;
+		// 获取 proxy-target-class 属性
 		if (node instanceof Element) {
 			Element ele = (Element) node;
 			if (ele.hasAttribute(PROXY_TARGET_CLASS)) {
@@ -51,6 +52,7 @@ class ScopedProxyBeanDefinitionDecorator implements BeanDefinitionDecorator {
 
 		// Register the original bean definition as it will be referenced by the scoped proxy
 		// and is relevant for tooling (validation, navigation).
+		// 注册原始 BeanDefinition，生成基于 ScopedProxyFactoryBean 的代理 BeanDefinition
 		BeanDefinitionHolder holder =
 				ScopedProxyUtils.createScopedProxy(definition, parserContext.getRegistry(), proxyTargetClass);
 		String targetBeanName = ScopedProxyUtils.getTargetBeanName(definition.getBeanName());

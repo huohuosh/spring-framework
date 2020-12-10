@@ -23,6 +23,7 @@ import org.springframework.aop.MethodMatcher;
 /**
  * Convenient abstract superclass for dynamic method matchers,
  * which do care about arguments at runtime.
+ * 动态匹配
  *
  * @author Rod Johnson
  */

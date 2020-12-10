@@ -80,18 +80,23 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	/** The AdvisorChainFactory to use. */
 	AdvisorChainFactory advisorChainFactory = new DefaultAdvisorChainFactory();
 
-	/** Cache with Method as key and advisor chain List as value. */
+	/**
+	 * Cache with Method as key and advisor chain List as value.
+	 * 缓存方法和对应的 advisor 链
+	 */
 	private transient Map<MethodCacheKey, List<Object>> methodCache;
 
 	/**
 	 * Interfaces to be implemented by the proxy. Held in List to keep the order
 	 * of registration, to create JDK proxy with specified order of interfaces.
+	 * 代理要实现的接口, 在 List 中保留以保持注册顺序,以指定的接口顺序创建 JDK 代理
 	 */
 	private List<Class<?>> interfaces = new ArrayList<>();
 
 	/**
 	 * List of Advisors. If an Advice is added, it will be wrapped
 	 * in an Advisor before being added to this List.
+	 * Advisor 列表
 	 */
 	private List<Advisor> advisors = new ArrayList<>();
 
@@ -231,6 +236,11 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 		return ClassUtils.toClassArray(this.interfaces);
 	}
 
+	/**
+	 * 是否代理了给定的接口
+	 * @param intf the interface to check
+	 * @return
+	 */
 	@Override
 	public boolean isInterfaceProxied(Class<?> intf) {
 		for (Class<?> proxyIntf : this.interfaces) {

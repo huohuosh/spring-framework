@@ -53,11 +53,13 @@ public abstract class AbstractRegexpMethodPointcut extends StaticMethodMatcherPo
 
 	/**
 	 * Regular expressions to match.
+	 * 匹配的正则表达式。如 find.* 表示所有方法名以 find 开始的方法
 	 */
 	private String[] patterns = new String[0];
 
 	/**
 	 * Regular expressions <strong>not</strong> to match.
+	 * 排除的正则表达式
 	 */
 	private String[] excludedPatterns = new String[0];
 
@@ -130,6 +132,7 @@ public abstract class AbstractRegexpMethodPointcut extends StaticMethodMatcherPo
 	 */
 	@Override
 	public boolean matches(Method method, Class<?> targetClass) {
+		// 获取方法全限定名称和正则表达式匹配
 		return (matchesPattern(ClassUtils.getQualifiedMethodName(method, targetClass)) ||
 				(targetClass != method.getDeclaringClass() &&
 						matchesPattern(ClassUtils.getQualifiedMethodName(method, method.getDeclaringClass()))));
@@ -141,6 +144,7 @@ public abstract class AbstractRegexpMethodPointcut extends StaticMethodMatcherPo
 	 * @return whether the candidate matches at least one of the specified patterns
 	 */
 	protected boolean matchesPattern(String signatureString) {
+		// 遍历 patterns 判断是否匹配，如果匹配再判断是否在 excludedPatterns
 		for (int i = 0; i < this.patterns.length; i++) {
 			boolean matched = matches(signatureString, i);
 			if (matched) {

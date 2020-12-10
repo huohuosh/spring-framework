@@ -1370,7 +1370,7 @@ public abstract class ClassUtils {
 	 * @see #getInterfaceMethodIfPossible
 	 */
 	public static Method getMostSpecificMethod(Method method, @Nullable Class<?> targetClass) {
-		// 该方法不在给定的类中，可以在给定的类中重新
+		// 该方法声明类不是给定的类，可以在给定的类中重新
 		if (targetClass != null && targetClass != method.getDeclaringClass() && isOverridable(method, targetClass)) {
 			try {
 				// 是Public的，找到该方法在该类对应的方法

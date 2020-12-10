@@ -58,6 +58,7 @@ public interface MethodMatcher {
 	 * method returns {@code false}, no runtime check (i.e. no
 	 * {@link #matches(java.lang.reflect.Method, Class, Object[])} call)
 	 * will be made.
+	 * 静态匹配
 	 * @param method the candidate method
 	 * @param targetClass the target class
 	 * @return whether or not this method matches statically
@@ -73,6 +74,8 @@ public interface MethodMatcher {
 	 * @return whether or not a runtime match via the 3-arg
 	 * {@link #matches(java.lang.reflect.Method, Class, Object[])} method
 	 * is required if static matching passed
+	 * 1、先调用静态匹配，若返回true。此时就会继续去检查isRuntime()的返回值
+	 * 2、若isRuntime()还返回true，那就继续调用动态匹配
 	 */
 	boolean isRuntime();
 
@@ -84,6 +87,7 @@ public interface MethodMatcher {
 	 * {@link #isRuntime()} method returns {@code true}. Invoked
 	 * immediately before potential running of the advice, after any
 	 * advice earlier in the advice chain has run.
+	 * 动态匹配（运行时匹配）
 	 * @param method the candidate method
 	 * @param targetClass the target class
 	 * @param args arguments to the method

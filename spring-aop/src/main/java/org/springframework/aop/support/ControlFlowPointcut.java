@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  * Pointcut and method matcher for use in simple <b>cflow</b>-style pointcut.
  * Note that evaluating such pointcuts is 10-15 times slower than evaluating
  * normal pointcuts, but they are useful in some cases.
+ * 在特定类的特定方法中调用方法时，被调用方法才会被通知
  *
  * @author Rod Johnson
  * @author Rob Harrop

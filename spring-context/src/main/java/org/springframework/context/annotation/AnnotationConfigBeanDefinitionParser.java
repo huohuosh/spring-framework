@@ -45,6 +45,7 @@ public class AnnotationConfigBeanDefinitionParser implements BeanDefinitionParse
 		Object source = parserContext.extractSource(element);
 
 		// Obtain bean definitions for all relevant BeanPostProcessors.
+		// 获取注册相关的 BeanDefinition
 		Set<BeanDefinitionHolder> processorDefinitions =
 				AnnotationConfigUtils.registerAnnotationConfigProcessors(parserContext.getRegistry(), source);
 
