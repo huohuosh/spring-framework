@@ -43,7 +43,7 @@ public interface PathMatcher {
 	 * on the static path Strings will lead to the same result.
 	 * @param path the path String to check
 	 * @return {@code true} if the given {@code path} represents a pattern
-	 * 判断传入的path是否可以作为pattern使用
+	 * 判断传入的 path 是否可以作为 pattern 使用
 	 */
 	boolean isPattern(String path);
 
@@ -54,7 +54,7 @@ public interface PathMatcher {
 	 * @param path the path String to test
 	 * @return {@code true} if the supplied {@code path} matched,
 	 * {@code false} if it didn't
-	 * 使用pattern匹配path
+	 * 使用 pattern 匹配 path
 	 */
 	boolean match(String pattern, String path);
 
@@ -90,7 +90,7 @@ public interface PathMatcher {
 	 * @param path the full path to introspect
 	 * @return the pattern-mapped part of the given {@code path}
 	 * (never {@code null})
-	 * 提取path中匹配到的部分,如pattern(myroot/*.html),path(myroot/myfile.html),返回myfile.html
+	 * 提取 path 中匹配到的部分,如 pattern(myroot/*.html),path(myroot/myfile.html),返回 myfile.html
 	 */
 	String extractPathWithinPattern(String pattern, String path);
 
@@ -102,8 +102,8 @@ public interface PathMatcher {
 	 * @param pattern the path pattern, possibly containing URI templates
 	 * @param path the full path to extract template variables from
 	 * @return a map, containing variable names as keys; variables values as values
-	 * 提取path中匹配到的部分,只是这边还需跟占位符配对为map,
-	 * 如pattern(/hotels/{hotel}),path(/hotels/1),解析出"hotel"->"1"
+	 * 提取 path 中匹配到的部分,只是这边还需跟占位符配对为 map,
+	 * 如 pattern(/hotels/{hotel}),path(/hotels/1),解析出 "hotel"->"1"
 	 */
 	Map<String, String> extractUriTemplateVariables(String pattern, String path);
 

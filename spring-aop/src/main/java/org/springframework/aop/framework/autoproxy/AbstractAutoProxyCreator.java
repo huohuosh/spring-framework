@@ -324,8 +324,6 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
-			//
-			//
 			/**
 			 * 如果是非循环引用的话，处理该 bean 的代理
 			 * 因为循环引用已经在 {@link #getEarlyBeanReference} 处理过了

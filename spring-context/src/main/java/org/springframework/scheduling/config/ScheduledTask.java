@@ -31,7 +31,11 @@ import org.springframework.lang.Nullable;
  * @see ScheduledTaskRegistrar#scheduleFixedDelayTask(FixedDelayTask)
  */
 public final class ScheduledTask {
-
+	/**
+	 * 任务，其实就是很简单的包装了 Runnable
+	 *  TriggerTask、CronTask（主要是支持的 CronTrigger、cron表达式）
+	 *  FixedDelayTask、FixedRateTask、IntervalTask (前两者得父类)
+	 */
 	private final Task task;
 
 	@Nullable

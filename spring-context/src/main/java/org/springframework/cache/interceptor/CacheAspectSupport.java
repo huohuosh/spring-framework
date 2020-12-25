@@ -207,16 +207,20 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 
 	@Override
 	public void afterPropertiesSet() {
+		// 校验 cacheOperationSource
 		Assert.state(getCacheOperationSource() != null, "The 'cacheOperationSources' property is required: " +
 				"If there are no cacheable methods, then don't use a cache aspect.");
 	}
 
 	@Override
 	public void afterSingletonsInstantiated() {
+		// 如果获取不到 cacheResolver
 		if (getCacheResolver() == null) {
 			// Lazily initialize cache resolver via default cache manager...
 			Assert.state(this.beanFactory != null, "CacheResolver or BeanFactory must be set on cache aspect");
 			try {
+				// 获取 cacheManager（配置文件配置的 cache-manager，如果不配置，默认为 cacheManager）
+				// 设置 cacheResolver 属性
 				setCacheManager(this.beanFactory.getBean(CacheManager.class));
 			}
 			catch (NoUniqueBeanDefinitionException ex) {
@@ -340,6 +344,7 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 			Class<?> targetClass = getTargetClass(target);
 			CacheOperationSource cacheOperationSource = getCacheOperationSource();
 			if (cacheOperationSource != null) {
+				// 获取执行方法上所有的缓存操作集合
 				Collection<CacheOperation> operations = cacheOperationSource.getCacheOperations(method, targetClass);
 				if (!CollectionUtils.isEmpty(operations)) {
 					return execute(invoker, method,
@@ -394,13 +399,18 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 
 
 		// Process any early evictions
+		// 处理 beforeInvocation = true 的缓存删除操作
 		processCacheEvicts(contexts.get(CacheEvictOperation.class), true,
 				CacheOperationExpressionEvaluator.NO_RESULT);
 
 		// Check if we have a cached item matching the conditions
+		// 从缓存中查找，是否有匹配@Cacheable 的缓存数据
 		Cache.ValueWrapper cacheHit = findCachedItem(contexts.get(CacheableOperation.class));
 
 		// Collect puts from any @Cacheable miss, if no cached item is found
+		// 如果@Cacheable没有被缓存，那么就需要将数据缓存起来，
+		// 这里将@Cacheable操作收集成 CachePutRequest 集合
+		// 以便后续做 @CachePut 缓存数据存放
 		List<CachePutRequest> cachePutRequests = new LinkedList<>();
 		if (cacheHit == null) {
 			collectPutRequests(contexts.get(CacheableOperation.class),
@@ -410,6 +420,8 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 		Object cacheValue;
 		Object returnValue;
 
+		// StringToBooleanConverter1.如果没有 @CachePut 操作，就使用@Cacheable获取的结果
+		// 2.如果缓存没有命中，则执行方法，如果需要缓存则方法的返回值就是要缓存的数据
 		if (cacheHit != null && !hasCachePut(contexts)) {
 			// If there are no put requests, just use the cache hit
 			cacheValue = cacheHit.get();
@@ -422,14 +434,17 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 		}
 
 		// Collect any explicit @CachePuts
+		// 收集 @CachePuts 操作
 		collectPutRequests(contexts.get(CachePutOperation.class), cacheValue, cachePutRequests);
 
 		// Process any collected put requests, either from @CachePut or a @Cacheable miss
+		// 处理收集的 put 请求，@CachePut 或者@Cacheable
 		for (CachePutRequest cachePutRequest : cachePutRequests) {
 			cachePutRequest.apply(cacheValue);
 		}
 
 		// Process any late evictions
+		// 处理一般的 @CacheEvict 缓存删除操作情况(beforeInvocation = false)
 		processCacheEvicts(contexts.get(CacheEvictOperation.class), false, cacheValue);
 
 		return returnValue;

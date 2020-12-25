@@ -17,10 +17,7 @@
 package org.springframework.context.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-import org.springframework.context.annotation.AnnotationConfigBeanDefinitionParser;
-import org.springframework.context.annotation.AnnotationConfigUtils;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
+import org.springframework.context.annotation.*;
 
 /**
  * {@link org.springframework.beans.factory.xml.NamespaceHandler}
@@ -39,11 +36,18 @@ public class ContextNamespaceHandler extends NamespaceHandlerSupport {
 		/**
 		 * 注册注解相关的 PostProcessor
 		 * @see AnnotationConfigUtils#registerAnnotationConfigProcessors
+		 * @see org.springframework.context.annotation.ConfigurationClassPostProcessor
+		 * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+		 * @see org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
+		 * @see org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor
+		 * @see org.springframework.context.event.EventListenerMethodProcessor
+		 * @see org.springframework.context.event.DefaultEventListenerFactory
 		 */
 		registerBeanDefinitionParser("annotation-config", new AnnotationConfigBeanDefinitionParser());
 		/**
 		 * 扫描包注册相关的 BeanDefinition
-		 * 如果 annotation-config 属性为 true,注册注解相关的 PostProcessor
+		 * 如果 annotation-config 属性为 true (默认为 true), 功能等同于 <context:annotation-config/>
+		 * @see ClassPathBeanDefinitionScanner#doScan
 		 * @see ComponentScan
 		 * @see org.springframework.context.annotation.ComponentScanAnnotationParser
 		 */

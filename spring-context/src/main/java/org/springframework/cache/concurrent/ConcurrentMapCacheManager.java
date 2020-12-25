@@ -51,11 +51,17 @@ public class ConcurrentMapCacheManager implements CacheManager, BeanClassLoaderA
 	private final ConcurrentMap<String, Cache> cacheMap = new ConcurrentHashMap<>(16);
 
 	private boolean dynamic = true;
-
+	/**
+	 * 是否允许 null 值
+	 */
 	private boolean allowNullValues = true;
-
+	/**
+	 * 存储值还是引用，如果存在值需要序列化方案
+	 */
 	private boolean storeByValue = false;
-
+	/**
+	 * 序列化相关
+	 */
 	@Nullable
 	private SerializationDelegate serialization;
 
@@ -189,6 +195,7 @@ public class ConcurrentMapCacheManager implements CacheManager, BeanClassLoaderA
 	 * @return the ConcurrentMapCache (or a decorator thereof)
 	 */
 	protected Cache createConcurrentMapCache(String name) {
+		// 序列化，反序列化
 		SerializationDelegate actualSerialization = (isStoreByValue() ? this.serialization : null);
 		return new ConcurrentMapCache(name, new ConcurrentHashMap<>(256),
 				isAllowNullValues(), actualSerialization);

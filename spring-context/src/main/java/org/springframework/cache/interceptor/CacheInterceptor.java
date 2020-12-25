@@ -48,6 +48,7 @@ public class CacheInterceptor extends CacheAspectSupport implements MethodInterc
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 		Method method = invocation.getMethod();
 
+		// 对执行方法调用的一次封装，主要是为了处理对异常的包装
 		CacheOperationInvoker aopAllianceInvoker = () -> {
 			try {
 				return invocation.proceed();

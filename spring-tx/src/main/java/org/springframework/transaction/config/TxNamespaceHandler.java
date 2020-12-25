@@ -16,9 +16,14 @@
 
 package org.springframework.transaction.config;
 
-import org.w3c.dom.Element;
-
+import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.event.TransactionalEventListenerFactory;
+import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.w3c.dom.Element;
 
 /**
  * {@code NamespaceHandler} allowing for the configuration of
@@ -52,7 +57,19 @@ public class TxNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+		/**
+		 * 解析 <tx:advice>
+		 */
 		registerBeanDefinitionParser("advice", new TxAdviceBeanDefinitionParser());
+		/**
+		 * 解析 <tx:annotation-driven>
+		 * 注册 {@link TransactionalEventListenerFactory}
+		 * 注册 {@link InfrastructureAdvisorAutoProxyCreator}
+		 * 注册 {@link AnnotationTransactionAttributeSource}
+		 * 注册 {@link TransactionInterceptor}
+		 * 注册 {@link BeanFactoryTransactionAttributeSourceAdvisor}
+		 * @see EnableTransactionManagement
+		 */
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
 		registerBeanDefinitionParser("jta-transaction-manager", new JtaTransactionManagerBeanDefinitionParser());
 	}

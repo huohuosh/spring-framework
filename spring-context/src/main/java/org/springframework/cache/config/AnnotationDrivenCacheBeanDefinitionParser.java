@@ -81,6 +81,7 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
+		// mode 默认是 proxy
 		String mode = element.getAttribute("mode");
 		if ("aspectj".equals(mode)) {
 			// mode="aspectj"
@@ -102,7 +103,13 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 	}
 
 	private void registerCacheAdvisor(Element element, ParserContext parserContext) {
+		// 注册 BeanDefinition {@link AopConfigUtils#AUTO_PROXY_CREATOR_BEAN_NAME}
+		// 为 InfrastructureAdvisorAutoProxyCreator
 		AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(parserContext, element);
+		// 注册 AnnotationCacheOperationSource
+		// 注册 CacheInterceptor
+		// 注册 BeanFactoryCacheOperationSourceAdvisor
+		// 将 AnnotationCacheOperationSource 和 CacheInterceptor 放入属性
 		SpringCachingConfigurer.registerCacheAdvisor(element, parserContext);
 		if (jsr107Present && jcacheImplPresent) {
 			JCacheCachingConfigurer.registerCacheAdvisor(element, parserContext);
@@ -113,6 +120,9 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 	 * Parse the cache resolution strategy to use. If a 'cache-resolver' attribute
 	 * is set, it is injected. Otherwise the 'cache-manager' is set. If {@code setBoth}
 	 * is {@code true}, both service are actually injected.
+	 * 如果有 cache-resolver，添加 cacheResolver 属性
+	 * 如果没有 cache-resolver 属性或 setBoth 为 true,设置 cacheManager 属性
+	 * setBoth 两个服务都会注入
 	 */
 	private static void parseCacheResolution(Element element, BeanDefinition def, boolean setBoth) {
 		String name = element.getAttribute("cache-resolver");
@@ -144,27 +154,36 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 				Object eleSource = parserContext.extractSource(element);
 
 				// Create the CacheOperationSource definition.
+				// 注册 AnnotationCacheOperationSource BeanDefinition
 				RootBeanDefinition sourceDef = new RootBeanDefinition("org.springframework.cache.annotation.AnnotationCacheOperationSource");
 				sourceDef.setSource(eleSource);
 				sourceDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 				String sourceName = parserContext.getReaderContext().registerWithGeneratedName(sourceDef);
 
 				// Create the CacheInterceptor definition.
+				// 注册 CacheInterceptor BeanDefinition
 				RootBeanDefinition interceptorDef = new RootBeanDefinition(CacheInterceptor.class);
 				interceptorDef.setSource(eleSource);
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+				// 解析缓存解析策略
 				parseCacheResolution(element, interceptorDef, false);
+				// 解析异常处理策略
 				parseErrorHandler(element, interceptorDef);
+				// 解析 key 生成器
 				CacheNamespaceHandler.parseKeyGenerator(element, interceptorDef);
+				// 设置 cacheOperationSources 属性
 				interceptorDef.getPropertyValues().add("cacheOperationSources", new RuntimeBeanReference(sourceName));
 				String interceptorName = parserContext.getReaderContext().registerWithGeneratedName(interceptorDef);
 
 				// Create the CacheAdvisor definition.
+				// 注册 BeanFactoryCacheOperationSourceAdvisor BeanDefinition
 				RootBeanDefinition advisorDef = new RootBeanDefinition(BeanFactoryCacheOperationSourceAdvisor.class);
 				advisorDef.setSource(eleSource);
 				advisorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+				// 将 AnnotationCacheOperationSource 和 CacheInterceptor 放人属性
 				advisorDef.getPropertyValues().add("cacheOperationSource", new RuntimeBeanReference(sourceName));
 				advisorDef.getPropertyValues().add("adviceBeanName", interceptorName);
+				// 设置 order 属性
 				if (element.hasAttribute("order")) {
 					advisorDef.getPropertyValues().add("order", element.getAttribute("order"));
 				}

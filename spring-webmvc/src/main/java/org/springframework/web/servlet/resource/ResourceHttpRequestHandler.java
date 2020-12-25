@@ -104,31 +104,60 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 	private static final String URL_RESOURCE_CHARSET_PREFIX = "[charset=";
 
 
+	/**
+	 * 所映射的静态资源文件的位置路径，String 列表形式
+	 * 对外部调用者来讲，locationValues ，locations 二者只能使用其一
+	 * ResourceHttpRequestHandler 内部会综合考虑这两个字段，最终归一为使用 locations
+	 */
 	private final List<String> locationValues = new ArrayList<>(4);
-
+	/**
+	 * 所映射的静态资源文件的位置路径， Resource 列表形式
+	 * 对外部调用者来讲，locationValues ，locations 二者只能使用其一
+	 * ResourceHttpRequestHandler 内部会综合考虑这两个字段，最终归一为使用 locations
+	 */
 	private final List<Resource> locations = new ArrayList<>(4);
 
 	private final Map<Resource, Charset> locationCharsets = new HashMap<>(4);
-
+	/**
+	 * 缺省会被初始化为只有一个元素 : {@link PathResourceResolver}
+	 */
 	private final List<ResourceResolver> resourceResolvers = new ArrayList<>(4);
 
 	private final List<ResourceTransformer> resourceTransformers = new ArrayList<>(4);
 
+	/**
+	 * 缺省为 {@link DefaultResourceResolverChain}
+	 */
 	@Nullable
 	private ResourceResolverChain resolverChain;
-
+	/**
+	 * 缺省为 {@link DefaultResourceTransformerChain}
+	 */
 	@Nullable
 	private ResourceTransformerChain transformerChain;
-
+	/**
+	 * 用于将静态资源内容写入到响应对象
+	 */
 	@Nullable
 	private ResourceHttpMessageConverter resourceHttpMessageConverter;
-
+	/**
+	 * 用于支持 HTTP Range 头部使用时， 将静态资源的部分写入到响应对象
+	 */
 	@Nullable
 	private ResourceRegionHttpMessageConverter resourceRegionHttpMessageConverter;
 
 	@Nullable
 	private ContentNegotiationManager contentNegotiationManager;
-
+	/**
+	 * 从请求路径中分析文件扩展名为用于查找 Media Type 的 key 的工具
+	 * 会结合属性 servletContext 和 contentNegotiationManager 初始化
+	 * 如果 servletContext != null
+	 * 为 {@link ServletPathExtensionContentNegotiationStrategy}
+	 * 否则为 {@link PathExtensionContentNegotiationStrategy}
+	 * contentNegotiationManager 如果被设置，会被用于获取初始化
+	 * 时的构造函数参数 Map<String, MediaType> mediaTypes
+	 * @see #initContentNegotiationStrategy()
+	 */
 	@Nullable
 	private PathExtensionContentNegotiationStrategy contentNegotiationStrategy;
 
@@ -449,7 +478,9 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 			throws ServletException, IOException {
 
 		// For very general mappings (e.g. "/") we need to check 404 first
+		// 获取目标静态资源
 		Resource resource = getResource(request);
+		// 资源不存在，返回 404
 		if (resource == null) {
 			logger.debug("Resource not found");
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -462,39 +493,64 @@ public class ResourceHttpRequestHandler extends WebContentGenerator
 		}
 
 		// Supported methods and required session
+		/**
+		 * 1. 如果支持 HTTP 方法属性 supportedMethods 被设置，则要求请求的方法必须是被支持的
+		 * 2. 如果需要 session 属性 requireSession 被设置，则要求必须已经存在相应的 session
+		 */
 		checkRequest(request);
 
 		// Header phase
+		/**
+		 * 开始对响应头部的输出阶段
+		 */
+		// 对 LastModified 头部的处理，如果使用了该头部，并且资源未在该头部指定的时间之后被修改
+		// 则直接返回 304
 		if (new ServletWebRequest(request, response).checkNotModified(resource.lastModified())) {
 			logger.trace("Resource not modified");
 			return;
 		}
 
 		// Apply cache settings, if any
+		// 应用必要的缓存头部 :
+		// this.cacheControl
+		// this.cacheSeconds
+		// this.varyByRequestHeaders
 		prepareResponse(response);
 
 		// Check the media type for the resource
+		// 尝试使用 contentNegotiationStrategy 获取资源的  MediaType
 		MediaType mediaType = getMediaType(request, resource);
 
 		// Content phase
+		/**
+		 * 开始对响应内容的输出阶段
+		 */
 		if (METHOD_HEAD.equals(request.getMethod())) {
+			// 对 HEAD 请求的处理,只写头部不写内容
+			// 头部 Content-Type, Content-Length 的设置
+			// 头部 Accept-Ranges : bytes
 			setHeaders(response, resource, mediaType);
 			return;
 		}
 
 		ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response);
+		// 最常见的静态资源访问处理
 		if (request.getHeader(HttpHeaders.RANGE) == null) {
 			Assert.state(this.resourceHttpMessageConverter != null, "Not initialized");
 			setHeaders(response, resource, mediaType);
+			// 写入资源内容到响应
 			this.resourceHttpMessageConverter.write(resource, mediaType, outputMessage);
 		}
+		// 请求使用了头部 Range 的资源请求情况
 		else {
 			Assert.state(this.resourceRegionHttpMessageConverter != null, "Not initialized");
 			response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 			ServletServerHttpRequest inputMessage = new ServletServerHttpRequest(request);
 			try {
+				// 获取要返回哪些Range的参数
 				List<HttpRange> httpRanges = inputMessage.getHeaders().getRange();
 				response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+				// 向响应对象写入目标资源数据中被请求的那些 Range
 				this.resourceRegionHttpMessageConverter.write(
 						HttpRange.toResourceRegions(httpRanges, resource), mediaType, outputMessage);
 			}

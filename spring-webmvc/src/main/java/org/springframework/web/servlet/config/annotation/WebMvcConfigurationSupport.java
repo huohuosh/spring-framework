@@ -494,6 +494,7 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 
 		ResourceHandlerRegistry registry = new ResourceHandlerRegistry(this.applicationContext,
 				this.servletContext, mvcContentNegotiationManager(), mvcUrlPathHelper());
+		// 这里调用的 addResourceHandlers 会是开发人员或者框架其他部分提供的配置逻辑
 		addResourceHandlers(registry);
 
 		AbstractHandlerMapping handlerMapping = registry.getHandlerMapping();

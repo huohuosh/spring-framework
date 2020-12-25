@@ -65,7 +65,9 @@ public class ThreadPoolTaskScheduler extends ExecutorConfigurationSupport
 
 	@Nullable
 	private volatile ErrorHandler errorHandler;
-
+	/**
+	 * 内部持有一个JUC的 ScheduledExecutorService 的引用
+	 */
 	@Nullable
 	private ScheduledExecutorService scheduledExecutor;
 
@@ -115,6 +117,7 @@ public class ThreadPoolTaskScheduler extends ExecutorConfigurationSupport
 	protected ExecutorService initializeExecutor(
 			ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
 
+		// 创建 ScheduledThreadPoolExecutor
 		this.scheduledExecutor = createExecutor(this.poolSize, threadFactory, rejectedExecutionHandler);
 
 		if (this.removeOnCancelPolicy) {

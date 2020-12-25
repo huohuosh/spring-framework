@@ -221,9 +221,10 @@ public class ThreadPoolTaskExecutor extends ExecutorConfigurationSupport
 	@Override
 	protected ExecutorService initializeExecutor(
 			ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
-
+		// 创建阻塞队列
 		BlockingQueue<Runnable> queue = createQueue(this.queueCapacity);
 
+		// 创建线程池
 		ThreadPoolExecutor executor;
 		if (this.taskDecorator != null) {
 			executor = new ThreadPoolExecutor(

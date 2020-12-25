@@ -232,7 +232,18 @@ public class ScheduledAnnotationBeanPostProcessor
 		}
 	}
 
+	/**
+	 * 设置 ScheduledTaskRegistrar 中 TaskScheduler
+	 * - 按类型查找 TaskScheduler
+	 * - 如果不唯一，按名称查找 TaskScheduler
+	 * - 按类型查找 ScheduledExecutorService
+	 * - 如果不唯一，按名称查找 ScheduledExecutorService
+	 *
+	 * @see TaskScheduler
+	 * @see ScheduledExecutorService
+	 */
 	private void finishRegistration() {
+		// 设置 ScheduledTaskRegistrar 中的 taskScheduler
 		if (this.scheduler != null) {
 			this.registrar.setScheduler(this.scheduler);
 		}
@@ -251,10 +262,12 @@ public class ScheduledAnnotationBeanPostProcessor
 			Assert.state(this.beanFactory != null, "BeanFactory must be set to find scheduler by type");
 			try {
 				// Search for TaskScheduler bean...
+				// 按类型查找 TaskScheduler，设置 taskScheduler
 				this.registrar.setTaskScheduler(resolveSchedulerBean(this.beanFactory, TaskScheduler.class, false));
 			}
 			catch (NoUniqueBeanDefinitionException ex) {
 				logger.trace("Could not find unique TaskScheduler bean", ex);
+				// 如果不唯一，按名称查找 TaskScheduler，设置 taskScheduler
 				try {
 					this.registrar.setTaskScheduler(resolveSchedulerBean(this.beanFactory, TaskScheduler.class, true));
 				}
@@ -271,11 +284,13 @@ public class ScheduledAnnotationBeanPostProcessor
 			catch (NoSuchBeanDefinitionException ex) {
 				logger.trace("Could not find default TaskScheduler bean", ex);
 				// Search for ScheduledExecutorService bean next...
+				// 按类型查找 ScheduledExecutorService，设置 taskScheduler
 				try {
 					this.registrar.setScheduler(resolveSchedulerBean(this.beanFactory, ScheduledExecutorService.class, false));
 				}
 				catch (NoUniqueBeanDefinitionException ex2) {
 					logger.trace("Could not find unique ScheduledExecutorService bean", ex2);
+					// 如果不唯一，按名称查找 ScheduledExecutorService，设置 taskScheduler
 					try {
 						this.registrar.setScheduler(resolveSchedulerBean(this.beanFactory, ScheduledExecutorService.class, true));
 					}
@@ -341,12 +356,14 @@ public class ScheduledAnnotationBeanPostProcessor
 
 		Class<?> targetClass = AopProxyUtils.ultimateTargetClass(bean);
 		if (!this.nonAnnotatedClasses.contains(targetClass)) {
+			// 找到该方法上注解的 @Scheduled
 			Map<Method, Set<Scheduled>> annotatedMethods = MethodIntrospector.selectMethods(targetClass,
 					(MethodIntrospector.MetadataLookup<Set<Scheduled>>) method -> {
 						Set<Scheduled> scheduledMethods = AnnotatedElementUtils.getMergedRepeatableAnnotations(
 								method, Scheduled.class, Schedules.class);
 						return (!scheduledMethods.isEmpty() ? scheduledMethods : null);
 					});
+			// 如果未找到，加入 nonAnnotatedClasses 集合
 			if (annotatedMethods.isEmpty()) {
 				this.nonAnnotatedClasses.add(targetClass);
 				if (logger.isTraceEnabled()) {
@@ -375,6 +392,7 @@ public class ScheduledAnnotationBeanPostProcessor
 	 */
 	protected void processScheduled(Scheduled scheduled, Method method, Object bean) {
 		try {
+			// 创建 ScheduledMethodRunnable
 			Runnable runnable = createRunnable(bean, method);
 			boolean processedSchedule = false;
 			String errorMessage =

@@ -81,20 +81,27 @@ public class TaskExecutorFactoryBean implements
 
 	@Override
 	public void afterPropertiesSet() {
+		// 实例化 ThreadPoolTaskExecutor
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		// 设置线程池线程数范围
 		determinePoolSizeRange(executor);
+		// 队列容量
 		if (this.queueCapacity != null) {
 			executor.setQueueCapacity(this.queueCapacity);
 		}
+		// keep-alive
 		if (this.keepAliveSeconds != null) {
 			executor.setKeepAliveSeconds(this.keepAliveSeconds);
 		}
+		// 拒绝策略
 		if (this.rejectedExecutionHandler != null) {
 			executor.setRejectedExecutionHandler(this.rejectedExecutionHandler);
 		}
+		// 线程名前缀
 		if (this.beanName != null) {
 			executor.setThreadNamePrefix(this.beanName + "-");
 		}
+		// 执行 ThreadPoolTaskExecutor 的初始化方法，创建线程池
 		executor.afterPropertiesSet();
 		this.target = executor;
 	}
@@ -106,12 +113,16 @@ public class TaskExecutorFactoryBean implements
 				int maxPoolSize;
 				int separatorIndex = this.poolSize.indexOf('-');
 				if (separatorIndex != -1) {
+					// 核心线程数
 					corePoolSize = Integer.valueOf(this.poolSize.substring(0, separatorIndex));
+					// 最大线程数
 					maxPoolSize = Integer.valueOf(this.poolSize.substring(separatorIndex + 1, this.poolSize.length()));
 					if (corePoolSize > maxPoolSize) {
 						throw new IllegalArgumentException(
 								"Lower bound of pool-size range must not exceed the upper bound");
 					}
+					// 如果没有队列，如果核心线程数为 0,核心线程数取最大线程数
+					// 设置 allowCoreThreadTimeout 为 true, 表明支持核心线程超时释放，默认不支持
 					if (this.queueCapacity == null) {
 						// No queue-capacity provided, so unbounded
 						if (corePoolSize == 0) {

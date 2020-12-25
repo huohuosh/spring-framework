@@ -45,13 +45,25 @@ import org.springframework.util.Assert;
  * @since 3.0
  */
 public class PeriodicTrigger implements Trigger {
-
+	/**
+	 * 表示间隔时长
+	 * 注意在 fixedRate 与 fixedDelay 两种模式下的不同含义
+	 */
 	private final long period;
-
+	/**
+	 * 表示间隔时长的单位
+	 * 默认 {@link TimeUnit#MILLISECONDS}
+	 */
 	private final TimeUnit timeUnit;
-
+	/**
+	 * 表示启动任务后间隔多长时间开始执行第一次任务
+	 */
 	private volatile long initialDelay = 0;
-
+	/**
+	 * 表示是否是 fixedRate
+	 * 为 true 时是 fixedRate，否则是 fixedDelay
+	 * 默认为 false
+	 */
 	private volatile boolean fixedRate = false;
 
 

@@ -16,6 +16,10 @@
 
 package org.springframework.cache.config;
 
+import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
+import org.springframework.cache.annotation.ProxyCachingConfiguration;
+import org.springframework.cache.interceptor.CacheInterceptor;
+import org.springframework.context.annotation.AutoProxyRegistrar;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -40,12 +44,24 @@ public class CacheNamespaceHandler extends NamespaceHandlerSupport {
 	static final String DEFAULT_CACHE_MANAGER_BEAN_NAME = "cacheManager";
 
 
+	/**
+	 * 获取 cacheManager
+	 * 如果有 cache-manager 属性，获取该属性，如果没有使用 cacheManager
+	 * @param element
+	 * @return
+	 */
 	static String extractCacheManager(Element element) {
 		return (element.hasAttribute(CacheNamespaceHandler.CACHE_MANAGER_ATTRIBUTE) ?
 				element.getAttribute(CacheNamespaceHandler.CACHE_MANAGER_ATTRIBUTE) :
 				CacheNamespaceHandler.DEFAULT_CACHE_MANAGER_BEAN_NAME);
 	}
 
+	/**
+	 * key 生成器
+	 * @param element
+	 * @param def
+	 * @return
+	 */
 	static BeanDefinition parseKeyGenerator(Element element, BeanDefinition def) {
 		String name = element.getAttribute("key-generator");
 		if (StringUtils.hasText(name)) {
@@ -57,7 +73,18 @@ public class CacheNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+		/**
+		 * 解析 <cache:annotation-driven> 注解
+		 * @see org.springframework.cache.annotation.EnableCaching
+		 * @see InfrastructureAdvisorAutoProxyCreator
+		 * @see AutoProxyRegistrar
+		 * @see ProxyCachingConfiguration
+		 */
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenCacheBeanDefinitionParser());
+		/**
+		 *
+		 * @see CacheInterceptor
+		 */
 		registerBeanDefinitionParser("advice", new CacheAdviceParser());
 	}
 

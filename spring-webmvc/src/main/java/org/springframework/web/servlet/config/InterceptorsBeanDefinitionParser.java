@@ -18,6 +18,8 @@ package org.springframework.web.servlet.config;
 
 import java.util.List;
 
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -53,6 +55,16 @@ class InterceptorsBeanDefinitionParser implements BeanDefinitionParser {
 		}
 
 		List<Element> interceptors = DomUtils.getChildElementsByTagName(element, "bean", "ref", "interceptor");
+		/**
+		 * 遍历 <mvc:interceptors> 子元素，创建 {@link MappedInterceptor}s
+		 *  - 如果是 <mvc:interceptor>
+		 *    获取 mapping 和 exclude-mapping 得到包含和要过滤的路径
+		 *    获取 bean 或 ref 元素得到 {@link HandlerInterceptor}
+		 *  - 如果 bean 或 ref元素，得到 {@link HandlerInterceptor}
+		 * 将这些元素加入构造器函数参数
+		 * 如果存在 path-matcher， 设置 属性 pathMatcher 为该值
+		 * 使用时如果不存在该值，默认应该是 {@link AntPathMatcher}
+		 */
 		for (Element interceptor : interceptors) {
 			RootBeanDefinition mappedInterceptorDef = new RootBeanDefinition(MappedInterceptor.class);
 			mappedInterceptorDef.setSource(context.extractSource(interceptor));

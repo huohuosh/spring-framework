@@ -50,6 +50,8 @@ public interface TransactionDefinition {
 	 * Analogous to the EJB transaction attribute of the same name.
 	 * <p>This is typically the default setting of a transaction definition,
 	 * and typically defines a transaction synchronization scope.
+	 * 事务传播级别 1：
+	 * 当前如果有事务，Spring 就会使用该事务；否则会开始一个新事务；(这也是默认设置和定义）
 	 */
 	int PROPAGATION_REQUIRED = 0;
 
@@ -69,6 +71,8 @@ public interface TransactionDefinition {
 	 * synchronization conflicts at runtime). If such nesting is unavoidable, make sure
 	 * to configure your transaction manager appropriately (typically switching to
 	 * "synchronization on actual transaction").
+	 * 事务传播级别 2：
+	 * 如果有事务，Spring 就会使用该事务；否则不会开始一个新事务
 	 * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#setTransactionSynchronization
 	 * @see org.springframework.transaction.support.AbstractPlatformTransactionManager#SYNCHRONIZATION_ON_ACTUAL_TRANSACTION
 	 */
@@ -79,6 +83,8 @@ public interface TransactionDefinition {
 	 * exists. Analogous to the EJB transaction attribute of the same name.
 	 * <p>Note that transaction synchronization within a {@code PROPAGATION_MANDATORY}
 	 * scope will always be driven by the surrounding transaction.
+	 * 事务传播级别 3：
+	 * 当前如果有事务，Spring 就会使用该事务；否则会因为没有事务而抛出异常
 	 */
 	int PROPAGATION_MANDATORY = 2;
 
@@ -93,6 +99,8 @@ public interface TransactionDefinition {
 	 * <p>A {@code PROPAGATION_REQUIRES_NEW} scope always defines its own
 	 * transaction synchronizations. Existing synchronizations will be suspended
 	 * and resumed appropriately.
+	 * 事务传播级别 4：
+	 * 总是要开启一个新事务。如果当前已经有事务，则将已有事务挂起
 	 * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
 	 */
 	int PROPAGATION_REQUIRES_NEW = 3;
@@ -108,6 +116,8 @@ public interface TransactionDefinition {
 	 * <p>Note that transaction synchronization is <i>not</i> available within a
 	 * {@code PROPAGATION_NOT_SUPPORTED} scope. Existing synchronizations
 	 * will be suspended and resumed appropriately.
+	 * 事务传播级别 5：
+	 * 代码总是在非事务环境下执行，如果当前有事务，则将已有事务挂起，再执行代码，之后恢复事务
 	 * @see org.springframework.transaction.jta.JtaTransactionManager#setTransactionManager
 	 */
 	int PROPAGATION_NOT_SUPPORTED = 4;
@@ -117,6 +127,8 @@ public interface TransactionDefinition {
 	 * exists. Analogous to the EJB transaction attribute of the same name.
 	 * <p>Note that transaction synchronization is <i>not</i> available within a
 	 * {@code PROPAGATION_NEVER} scope.
+	 * 事务传播级别 6：
+	 * 绝对不允许代码在事务中执行。如果当前运行环境有事务存在，则直接抛出异常，结束运行
 	 */
 	int PROPAGATION_NEVER = 5;
 
@@ -129,6 +141,11 @@ public interface TransactionDefinition {
 	 * {@link org.springframework.jdbc.datasource.DataSourceTransactionManager}
 	 * when working on a JDBC 3.0 driver. Some JTA providers might support
 	 * nested transactions as well.
+	 * 事务传播级别 7：
+	 * 该级别支持嵌套事务执行
+	 * 如果没有父事务存在，那么执行情况与 PROPAGATION_REQUIRED 一样；
+	 * 典型的应用是批量数据入库，开启父事务对一批数据入库，而对于每条入库的数据
+	 * 都有一个子事务对应，那么当所有的子事务成功，父事务提交，才算成功，否则，就都失败。
 	 * @see org.springframework.jdbc.datasource.DataSourceTransactionManager
 	 */
 	int PROPAGATION_NESTED = 6;
@@ -137,6 +154,9 @@ public interface TransactionDefinition {
 	/**
 	 * Use the default isolation level of the underlying datastore.
 	 * All other levels correspond to the JDBC isolation levels.
+	 * 事务隔离级别 1：
+	 * 默认的隔离级别，同数据库一样的
+	 * 如果不做特别设置，mysql 默认的是可重复读，而 oracle 默认的是读提交
 	 * @see java.sql.Connection
 	 */
 	int ISOLATION_DEFAULT = -1;
@@ -148,6 +168,9 @@ public interface TransactionDefinition {
 	 * transaction before any changes in that row have been committed (a "dirty read").
 	 * If any of the changes are rolled back, the second transaction will have
 	 * retrieved an invalid row.
+	 * 事务隔离级别 2：
+	 * 读未提交
+	 * 即一个事务可以读取另外一个事务中未提交的数据，即脏读数据存在，性能最好，但是没啥用
 	 * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
 	 */
 	int ISOLATION_READ_UNCOMMITTED = Connection.TRANSACTION_READ_UNCOMMITTED;
@@ -157,6 +180,12 @@ public interface TransactionDefinition {
 	 * phantom reads can occur.
 	 * <p>This level only prohibits a transaction from reading a row
 	 * with uncommitted changes in it.
+	 * 事务隔离级别 3：
+	 * 读提交
+	 * 即一个事务只能读取到另一个事务提交后的数据
+	 * oracle 数据库默认隔离级别
+	 * 存在不可重复读问题，即交叉事务出现，A 事务两次读取数据可能会读到 B 事务提交的修改后的数据，
+	 * 即在同一个事务中读到了不同的数据，也叫不可重复读
 	 * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
 	 */
 	int ISOLATION_READ_COMMITTED = Connection.TRANSACTION_READ_COMMITTED;
@@ -168,6 +197,11 @@ public interface TransactionDefinition {
 	 * in it, and it also prohibits the situation where one transaction reads a row,
 	 * a second transaction alters the row, and the first transaction re-reads the row,
 	 * getting different values the second time (a "non-repeatable read").
+	 * 事务隔离级别 4：
+	 * 可重复读
+	 * 即一个事务只能读取到在次事务之前提交的数据，而之后提交不能读取到，不管对方的事务是否提交都读取不到，
+	 * mysql默认的隔离级别
+	 * 此隔离级别有可能会遇到幻读现象，但是 mysql 基于 innodb 引擎实现的数据库已经通过多版本控制解决了此问题，所以可以不考虑了
 	 * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
 	 */
 	int ISOLATION_REPEATABLE_READ = Connection.TRANSACTION_REPEATABLE_READ;
@@ -181,6 +215,9 @@ public interface TransactionDefinition {
 	 * that satisfies that {@code WHERE} condition, and the first transaction
 	 * re-reads for the same condition, retrieving the additional "phantom" row
 	 * in the second read.
+	 * 事务隔离级别 5：
+	 * 序列化读
+	 * 每次都是全表锁，性能最差，安全性最高，一般场景不适用，也没有这个必要
 	 * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
 	 */
 	int ISOLATION_SERIALIZABLE = Connection.TRANSACTION_SERIALIZABLE;

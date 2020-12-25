@@ -19,6 +19,8 @@ package org.springframework.web.servlet.config;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.util.UrlPathHelper;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.MutablePropertyValues;
@@ -91,14 +93,24 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 
 		registerUrlProvider(context, source);
 
+		/**
+		 * 注册 {@link AntPathMatcher}
+		 * @see MvcNamespaceUtils#PATH_MATCHER_BEAN_NAME
+		 * 注册 {@link UrlPathHelper}
+		 * @see MvcNamespaceUtils#URL_PATH_HELPER_BEAN_NAME
+		 */
 		RuntimeBeanReference pathMatcherRef = MvcNamespaceUtils.registerPathMatcher(null, context, source);
 		RuntimeBeanReference pathHelperRef = MvcNamespaceUtils.registerUrlPathHelper(null, context, source);
 
+		/**
+		 * 注册 {@link ResourceHttpRequestHandler}
+		 */
 		String resourceHandlerName = registerResourceHandler(context, element, pathHelperRef, source);
 		if (resourceHandlerName == null) {
 			return null;
 		}
 
+		// 设置映射关系
 		Map<String, String> urlMap = new ManagedMap<>();
 		String resourceRequestPath = element.getAttribute("mapping");
 		if (!StringUtils.hasText(resourceRequestPath)) {
@@ -107,6 +119,7 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 		}
 		urlMap.put(resourceRequestPath, resourceHandlerName);
 
+		// 注册 SimpleUrlHandlerMapping
 		RootBeanDefinition handlerMappingDef = new RootBeanDefinition(SimpleUrlHandlerMapping.class);
 		handlerMappingDef.setSource(source);
 		handlerMappingDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);

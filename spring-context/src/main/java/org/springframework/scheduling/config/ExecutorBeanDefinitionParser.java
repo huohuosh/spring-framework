@@ -48,6 +48,7 @@ public class ExecutorBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
 		if (StringUtils.hasText(queueCapacity)) {
 			builder.addPropertyValue("queueCapacity", queueCapacity);
 		}
+		// 配置拒绝策略
 		configureRejectionPolicy(element, builder);
 		String poolSize = element.getAttribute("pool-size");
 		if (StringUtils.hasText(poolSize)) {
@@ -56,6 +57,7 @@ public class ExecutorBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
 	}
 
 	private void configureRejectionPolicy(Element element, BeanDefinitionBuilder builder) {
+		// 获取 rejection-policy 属性
 		String rejectionPolicy = element.getAttribute("rejection-policy");
 		if (!StringUtils.hasText(rejectionPolicy)) {
 			return;
@@ -77,6 +79,7 @@ public class ExecutorBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
 		else {
 			policyClassName = rejectionPolicy;
 		}
+		// 设置拒绝策略
 		builder.addPropertyValue("rejectedExecutionHandler", new RootBeanDefinition(policyClassName));
 	}
 

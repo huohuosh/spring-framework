@@ -42,8 +42,10 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 	@Override
 	@Nullable
 	public TransactionAttribute parseTransactionAnnotation(AnnotatedElement element) {
+		// 获取 @Transactional 注解的属性值
 		AnnotationAttributes attributes = AnnotatedElementUtils.findMergedAnnotationAttributes(
 				element, Transactional.class, false, false);
+		// 解析 @Transactional 注解的属性值
 		if (attributes != null) {
 			return parseTransactionAnnotation(attributes);
 		}
@@ -59,14 +61,39 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 	protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 
+		/**
+		 * 获取并设置事务传播级别
+		 * @see Transactional#propagation()
+		 */
 		Propagation propagation = attributes.getEnum("propagation");
 		rbta.setPropagationBehavior(propagation.value());
+		/**
+		 * 获取并设置事务隔离级别
+		 * @see Transactional#isolation()
+		 */
 		Isolation isolation = attributes.getEnum("isolation");
 		rbta.setIsolationLevel(isolation.value());
+		/**
+		 * 获取并设置事务超时
+		 * @see Transactional#timeout()
+		 */
 		rbta.setTimeout(attributes.getNumber("timeout").intValue());
+		/**
+		 * 获取并设置事务只读属性
+		 * @see Transactional#readOnly()
+		 */
 		rbta.setReadOnly(attributes.getBoolean("readOnly"));
+		/**
+		 * @see Transactional#value()
+		 * @see Transactional#transactionManager()
+		 */
 		rbta.setQualifier(attributes.getString("value"));
 
+		/**
+		 * 获取需要回滚的异常，加入集合
+		 * @see Transactional#rollbackFor()
+		 * @see Transactional#rollbackForClassName()
+		 */
 		List<RollbackRuleAttribute> rollbackRules = new ArrayList<>();
 		for (Class<?> rbRule : attributes.getClassArray("rollbackFor")) {
 			rollbackRules.add(new RollbackRuleAttribute(rbRule));
@@ -74,6 +101,11 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		for (String rbRule : attributes.getStringArray("rollbackForClassName")) {
 			rollbackRules.add(new RollbackRuleAttribute(rbRule));
 		}
+		/**
+		 * 获取不需要回滚的异常，加入集合
+		 * @see Transactional#noRollbackFor()
+		 * @see Transactional#noRollbackForClassName()
+		 */
 		for (Class<?> rbRule : attributes.getClassArray("noRollbackFor")) {
 			rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
 		}

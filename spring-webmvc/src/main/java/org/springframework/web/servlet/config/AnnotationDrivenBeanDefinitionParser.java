@@ -21,6 +21,8 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.FactoryBean;
@@ -189,7 +191,30 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		gsonPresent = ClassUtils.isPresent("com.google.gson.Gson", classLoader);
 	}
 
-
+	/**
+	 * HandlerMapping 请求映射
+	 * - {@link RequestMappingHandlerMapping}
+	 *   支持 {@link RequestMapping} 注解
+	 * - {@link BeanNameUrlHandlerMapping}
+	 *   将 controller 类的名字映射为请求 url
+	 * HandlerAdapter 请求处理
+	 * - {@link RequestMappingHandlerAdapter}
+	 * 	 处理 {@link org.springframework.stereotype.Controller}
+	 * 	 和 {@link RequestMapping} 注解的处理器
+	 * - {@link HttpRequestHandlerAdapter}
+	 *   处理继承了 HttpRequestHandler 创建的处理器
+	 * - {@link SimpleControllerHandlerAdapter}
+	 * 	 处理继承自 Controller 接口的处理器
+	 * ExceptionResolver 处理异常的解析器
+	 * - {@link ExceptionHandlerExceptionResolver}
+	 * - {@link ResponseStatusExceptionResolver}
+	 * - {@link DefaultHandlerExceptionResolver}
+	 *
+	 *
+	 * @param element the element that is to be parsed into one or more {@link BeanDefinition BeanDefinitions}
+	 * @param context
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext context) {
@@ -201,6 +226,10 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 
 		RuntimeBeanReference contentNegotiationManager = getContentNegotiationManager(element, source, context);
 
+		/**
+		 * 注册 {@link RequestMappingHandlerMapping}
+		 * order 为 0
+		 */
 		RootBeanDefinition handlerMappingDef = new RootBeanDefinition(RequestMappingHandlerMapping.class);
 		handlerMappingDef.setSource(source);
 		handlerMappingDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -211,7 +240,10 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 			Boolean enableMatrixVariables = Boolean.valueOf(element.getAttribute("enable-matrix-variables"));
 			handlerMappingDef.getPropertyValues().add("removeSemicolonContent", !enableMatrixVariables);
 		}
-
+		/**
+		 * 解析 <mvc:path-matching path-helper="" path-matcher="" registered-suffixes-only="true"
+		 * 		suffix-pattern="true" trailing-slash="true"/>
+		 */
 		configurePathMatchingProperties(handlerMappingDef, element, context);
 		readerContext.getRegistry().registerBeanDefinition(HANDLER_MAPPING_BEAN_NAME, handlerMappingDef);
 
@@ -229,14 +261,46 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		bindingDef.getPropertyValues().add("validator", validator);
 		bindingDef.getPropertyValues().add("messageCodesResolver", messageCodesResolver);
 
+		/**
+		 * 解析 <mvc:message-converters>
+		 * 			<bean></bean>
+		 * 		 	<ref/>
+		 * 		</mvc:message-converters>
+		 */
 		ManagedList<?> messageConverters = getMessageConverters(element, source, context);
+		/**
+		 * 解析 <mvc:argument-resolvers>
+		 * 			<bean></bean>
+		 * 			<ref/>
+		 * 		</mvc:argument-resolvers>
+		 */
 		ManagedList<?> argumentResolvers = getArgumentResolvers(element, context);
+		/**
+		 * 解析 <mvc:return-value-handlers>
+		 * 			<bean></bean>
+		 * 			<ref/>
+		 * 		</mvc:return-value-handlers>
+		 */
 		ManagedList<?> returnValueHandlers = getReturnValueHandlers(element, context);
+		/**
+		 * 解析 <mvc:async-support default-timeout="" task-executor="">
+		 *      	<mvc:callable-interceptors>
+		 * 				<bean/>
+		 * 			</mvc:callable-interceptors>
+		 * 			<mvc:deferred-result-interceptors>
+		 * 				<bean/>
+		 * 			</mvc:deferred-result-interceptors>
+		 * 		</mvc:async-support>
+		 */
 		String asyncTimeout = getAsyncTimeout(element);
 		RuntimeBeanReference asyncExecutor = getAsyncExecutor(element);
 		ManagedList<?> callableInterceptors = getCallableInterceptors(element, source, context);
 		ManagedList<?> deferredResultInterceptors = getDeferredResultInterceptors(element, source, context);
 
+		/**
+		 * 注册 {@link RequestMappingHandlerAdapter}
+		 * @see ConfigurableWebBindingInitializer
+		 */
 		RootBeanDefinition handlerAdapterDef = new RootBeanDefinition(RequestMappingHandlerAdapter.class);
 		handlerAdapterDef.setSource(source);
 		handlerAdapterDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -285,6 +349,10 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		mappedInterceptorDef.getConstructorArgumentValues().addIndexedArgumentValue(1, csInterceptorDef);
 		String mappedInterceptorName = readerContext.registerWithGeneratedName(mappedInterceptorDef);
 
+		/**
+		 * 注册 {@link ExceptionHandlerExceptionResolver}
+		 * order 0
+		 */
 		RootBeanDefinition methodExceptionResolver = new RootBeanDefinition(ExceptionHandlerExceptionResolver.class);
 		methodExceptionResolver.setSource(source);
 		methodExceptionResolver.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -300,12 +368,20 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		}
 		String methodExResolverName = readerContext.registerWithGeneratedName(methodExceptionResolver);
 
+		/**
+		 * 注册 {@link ResponseStatusExceptionResolver}
+		 * order 1
+		 */
 		RootBeanDefinition statusExceptionResolver = new RootBeanDefinition(ResponseStatusExceptionResolver.class);
 		statusExceptionResolver.setSource(source);
 		statusExceptionResolver.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		statusExceptionResolver.getPropertyValues().add("order", 1);
 		String statusExResolverName = readerContext.registerWithGeneratedName(statusExceptionResolver);
 
+		/**
+		 * 注册 {@link DefaultHandlerExceptionResolver}
+		 * order 2
+		 */
 		RootBeanDefinition defaultExceptionResolver = new RootBeanDefinition(DefaultHandlerExceptionResolver.class);
 		defaultExceptionResolver.setSource(source);
 		defaultExceptionResolver.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -321,6 +397,12 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		context.registerComponent(new BeanComponentDefinition(defaultExceptionResolver, defaultExResolverName));
 
 		// Ensure BeanNameUrlHandlerMapping (SPR-8289) and default HandlerAdapters are not "turned off"
+		/**
+		 * 注册 {@link BeanNameUrlHandlerMapping} order 2
+		 * 注册 {@link HttpRequestHandlerAdapter}
+		 * 注册 {@link SimpleControllerHandlerAdapter}
+		 * 注册 {@link HandlerMappingIntrospector}
+		 */
 		MvcNamespaceUtils.registerDefaultComponents(context, source);
 
 		context.popAndRegisterContainingComponent();

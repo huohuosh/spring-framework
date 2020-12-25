@@ -88,7 +88,7 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 		if (method.getDeclaringClass() == Object.class) {
 			return null;
 		}
-
+		// 从缓存中获取 CacheOperation 集合
 		Object cacheKey = getCacheKey(method, targetClass);
 		Collection<CacheOperation> cached = this.attributeCache.get(cacheKey);
 
@@ -125,6 +125,7 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 	@Nullable
 	private Collection<CacheOperation> computeCacheOperations(Method method, @Nullable Class<?> targetClass) {
 		// Don't allow no-public methods as required.
+		// 如果不允许 非 public 的方法,返回 null
 		if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
 			return null;
 		}

@@ -16,7 +16,13 @@
 
 package org.springframework.scheduling.config;
 
+import org.springframework.scheduling.annotation.*;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * {@code NamespaceHandler} for the 'task' namespace.
@@ -28,9 +34,36 @@ public class TaskNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+		/**
+		 * 解析 <task:annotation-driven />
+		 * - 注册 {@link AsyncAnnotationBeanPostProcessor} （主要和 {@link Async}相关）
+		 * @see AsyncAnnotationAdvisor
+		 * @see AnnotationAsyncExecutionInterceptor
+		 * @see EnableAsync
+		 * - 注册 {@link ScheduledAnnotationBeanPostProcessor} （主要和 {@link Scheduled}相关）
+		 * @see ScheduledTaskRegistrar
+		 * @see EnableScheduling
+		 */
 		this.registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
+		/**
+		 * 解析 <task:executor/>，创建线程池
+		 * @see TaskExecutorFactoryBean
+		 * @see ThreadPoolTaskExecutor
+		 * @see ThreadPoolExecutor
+		 */
 		this.registerBeanDefinitionParser("executor", new ExecutorBeanDefinitionParser());
+		/**
+		 * 解析 <task:scheduled-tasks/> 和 {@link Schedules} 类似
+		 * @see ContextLifecycleScheduledTaskRegistrar
+		 * @see Task
+		 */
 		this.registerBeanDefinitionParser("scheduled-tasks", new ScheduledTasksBeanDefinitionParser());
+		/**
+		 * 解析 <task:scheduler/> 创建 ThreadPoolTaskScheduler
+		 * @see ThreadPoolTaskScheduler
+		 * @see org.springframework.scheduling.TaskScheduler
+		 * @see ScheduledThreadPoolExecutor
+		 */
 		this.registerBeanDefinitionParser("scheduler", new SchedulerBeanDefinitionParser());
 	}
 

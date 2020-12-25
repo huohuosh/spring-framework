@@ -65,6 +65,9 @@ public class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParse
 		}
 		else {
 			// mode="proxy"
+			/**
+			 * 注册 AsyncAnnotationBeanPostProcessor 和 ScheduledAnnotationBeanPostProcessor
+			 */
 			if (registry.containsBeanDefinition(TaskManagementConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 				parserContext.getReaderContext().error(
 						"Only one AsyncAnnotationBeanPostProcessor may exist within the context.", source);
@@ -73,14 +76,17 @@ public class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParse
 				BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
 						"org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor");
 				builder.getRawBeanDefinition().setSource(source);
+				// 得到 executor 属性，设置 BeanDefinition executor 属性
 				String executor = element.getAttribute("executor");
 				if (StringUtils.hasText(executor)) {
 					builder.addPropertyReference("executor", executor);
 				}
+				// 得到 exception-handler 属性，设置 BeanDefinition exceptionHandler 属性
 				String exceptionHandler = element.getAttribute("exception-handler");
 				if (StringUtils.hasText(exceptionHandler)) {
 					builder.addPropertyReference("exceptionHandler", exceptionHandler);
 				}
+				// 得到 proxy-target-class 属性，设置 BeanDefinition proxyTargetClass 属性
 				if (Boolean.valueOf(element.getAttribute(AopNamespaceUtils.PROXY_TARGET_CLASS_ATTRIBUTE))) {
 					builder.addPropertyValue("proxyTargetClass", true);
 				}
@@ -96,6 +102,7 @@ public class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParse
 			BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
 					"org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor");
 			builder.getRawBeanDefinition().setSource(source);
+			// 得到scheduler 属性，设置 BeanDefinition scheduler 属性
 			String scheduler = element.getAttribute("scheduler");
 			if (StringUtils.hasText(scheduler)) {
 				builder.addPropertyReference("scheduler", scheduler);
