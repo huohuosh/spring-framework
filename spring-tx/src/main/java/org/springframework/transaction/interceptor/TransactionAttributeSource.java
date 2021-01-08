@@ -42,6 +42,7 @@ public interface TransactionAttributeSource {
 	 * @param targetClass the target class (may be {@code null},
 	 * in which case the declaring class of the method must be used)
 	 * @return the matching transaction attribute, or {@code null} if none found
+	 * 通过 Method 和目标类，拿到事务属性
 	 */
 	@Nullable
 	TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass);

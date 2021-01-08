@@ -49,7 +49,9 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 	private boolean rollbackOnly = false;
 
 	private boolean completed = false;
-
+	/**
+	 * 还原点
+	 */
 	@Nullable
 	private Object savepoint;
 

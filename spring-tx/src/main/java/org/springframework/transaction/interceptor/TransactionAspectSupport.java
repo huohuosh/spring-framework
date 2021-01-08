@@ -284,26 +284,46 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
 		// 确定事务管理器
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+		// 拿到目标方法唯一标识（方法的全名）
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			/**
+			 * 获取 TransactionStatus，创建 TransactionInfo 并绑定线程
+			 */
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 
 			Object retVal;
 			try {
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
+				/**
+				 * 调用拦截器链，执行目标方法
+				 */
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
 				// target invocation exception
+				/**
+				 * 有事务的情况下
+				 * - 有事务属性，判断该异常是否要回滚
+				 * - 没有事务属性或者不是要回滚的异常
+				 *   判断 RollbackOnly，如果为 true 回滚，如果 false 提交
+				 *   如果当前异常不能被回滚 可以使用 currentTransactionStatus().setRollbackOnly() 手动回滚
+				 */
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
+				/**
+				 * 重置 ThreadLocal
+				 */
 				cleanupTransactionInfo(txInfo);
 			}
+			/**
+			 * 目标方法完全执行完成后，提交事务，但是在处理异常之后不执行
+			 */
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -378,17 +398,31 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	@Nullable
 	protected PlatformTransactionManager determineTransactionManager(@Nullable TransactionAttribute txAttr) {
 		// Do not attempt to lookup tx manager if no tx attributes are set
+		/**
+		 * 如果这两个都没配置，所以肯定是手动设置了 PlatformTransactionManager 的
+		 * 那就直接返回
+		 */
 		if (txAttr == null || this.beanFactory == null) {
 			return getTransactionManager();
 		}
-
+		/**
+		 * 根据此名称去容器内找 PlatformTransactionManager.class
+		 */
 		String qualifier = txAttr.getQualifier();
 		if (StringUtils.hasText(qualifier)) {
 			return determineQualifiedTransactionManager(this.beanFactory, qualifier);
 		}
+		/**
+		 *
+		 * 根据 {@link transactionManagerBeanName}去容器内找 PlatformTransactionManager.class
+		 */
 		else if (StringUtils.hasText(this.transactionManagerBeanName)) {
 			return determineQualifiedTransactionManager(this.beanFactory, this.transactionManagerBeanName);
 		}
+		/**
+		 * 若都没指定，直接根据类型去容器里找 getBean(Class)
+		 * 此处：若容器内有两个 PlatformTransactionManager，那就铁定会报错
+		 */
 		else {
 			PlatformTransactionManager defaultTransactionManager = getTransactionManager();
 			if (defaultTransactionManager == null) {
@@ -462,6 +496,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			@Nullable TransactionAttribute txAttr, final String joinpointIdentification) {
 
 		// If no name specified, apply method identification as transaction name.
+		// 设置 name
 		if (txAttr != null && txAttr.getName() == null) {
 			txAttr = new DelegatingTransactionAttribute(txAttr) {
 				@Override
@@ -471,6 +506,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			};
 		}
 
+		// 从事务管理器里，通过 txAttr 获取一个 TransactionStatus
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
@@ -483,6 +519,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				}
 			}
 		}
+		// 创建 TransactionInfo，绑定线程
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
@@ -599,18 +636,26 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	 * must pass it back to methods on this class, but not see its internals.
 	 */
 	protected final class TransactionInfo {
-
+		/**
+		 * 当前事务 事务管理器
+		 */
 		@Nullable
 		private final PlatformTransactionManager transactionManager;
-
+		/**
+		 * 当前事务 事务属性
+		 */
 		@Nullable
 		private final TransactionAttribute transactionAttribute;
-
+		/**
+		 * 当前事务 完限定的方法名称
+		 */
 		private final String joinpointIdentification;
 
 		@Nullable
 		private TransactionStatus transactionStatus;
-
+		/**
+		 * 保存了当前事务所在的`父事务`上下文的引用，构成了一个链
+		 */
 		@Nullable
 		private TransactionInfo oldTransactionInfo;
 

@@ -52,6 +52,9 @@ public class RuleBasedTransactionAttribute extends DefaultTransactionAttribute i
 	/** Static for optimal serializability. */
 	private static final Log logger = LogFactory.getLog(RuleBasedTransactionAttribute.class);
 
+	/**
+	 * 回滚规则
+	 */
 	@Nullable
 	private List<RollbackRuleAttribute> rollbackRules;
 
@@ -139,6 +142,7 @@ public class RuleBasedTransactionAttribute extends DefaultTransactionAttribute i
 
 		if (this.rollbackRules != null) {
 			for (RollbackRuleAttribute rule : this.rollbackRules) {
+				// 这里 getDepth() 就是去看看异常栈里面  该类型的异常处于啥位置
 				int depth = rule.getDepth(ex);
 				if (depth >= 0 && depth < deepest) {
 					deepest = depth;
@@ -152,11 +156,12 @@ public class RuleBasedTransactionAttribute extends DefaultTransactionAttribute i
 		}
 
 		// User superclass behavior (rollback on unchecked) if no rule matches.
+		// 没有指定回滚规则，那就交给父类吧（只回滚 RuntimeException 和 Error 类型）
 		if (winner == null) {
 			logger.trace("No relevant rollback rule found: applying default rules");
 			return super.rollbackOn(ex);
 		}
-
+		// 只要不是 NoRollbackRuleAttribute 就可以回滚
 		return !(winner instanceof NoRollbackRuleAttribute);
 	}
 

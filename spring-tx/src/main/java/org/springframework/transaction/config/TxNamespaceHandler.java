@@ -68,6 +68,7 @@ public class TxNamespaceHandler extends NamespaceHandlerSupport {
 		 * 注册 {@link AnnotationTransactionAttributeSource}
 		 * 注册 {@link TransactionInterceptor}
 		 * 注册 {@link BeanFactoryTransactionAttributeSourceAdvisor}
+		 *
 		 * @see EnableTransactionManagement
 		 */
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());

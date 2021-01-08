@@ -52,11 +52,17 @@ public class DefaultTransactionStatus extends AbstractTransactionStatus {
 
 	@Nullable
 	private final Object transaction;
-
+	/**
+	 * 是否是新事务
+	 */
 	private final boolean newTransaction;
-
+	/**
+	 * 如果为给定事务打开了新的事务同步  该值为true
+	 */
 	private final boolean newSynchronization;
-
+	/**
+	 * 该事务是否标记为了只读
+	 */
 	private final boolean readOnly;
 
 	private final boolean debug;

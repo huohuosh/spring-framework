@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping;
@@ -79,12 +80,15 @@ public class MvcNamespaceHandler extends NamespaceHandlerSupport {
 		 * - {@link ResponseStatusExceptionResolver}
 		 * - {@link DefaultHandlerExceptionResolver}
 		 * @see WebMvcConfigurationSupport#handlerExceptionResolver()
+		 *
+		 * @see EnableWebMvc
 		 */
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenBeanDefinitionParser());
 		/**
 		 * 解析 <mvc:default-servlet-handler> 标签
 		 * @see DefaultServletHttpRequestHandler
 		 * @see DefaultServletHandlerConfigurer
+		 * @see WebMvcConfigurationSupport#defaultServletHandlerMapping()
 		 */
 		registerBeanDefinitionParser("default-servlet-handler", new DefaultServletHandlerBeanDefinitionParser());
 		/**
@@ -104,8 +108,8 @@ public class MvcNamespaceHandler extends NamespaceHandlerSupport {
 		 * @see SimpleUrlHandlerMapping
 		 * @see ParameterizableViewController
 		 * @see ViewControllerRegistration
-		 * @see WebMvcConfigurationSupport#viewControllerHandlerMapping()
 		 * @see MvcNamespaceUtils#registerDefaultComponents
+		 * @see WebMvcConfigurationSupport#viewControllerHandlerMapping()
 		 */
 		registerBeanDefinitionParser("view-controller", new ViewControllerBeanDefinitionParser());
 		registerBeanDefinitionParser("redirect-view-controller", new ViewControllerBeanDefinitionParser());

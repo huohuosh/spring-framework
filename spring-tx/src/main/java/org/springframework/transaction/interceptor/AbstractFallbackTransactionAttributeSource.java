@@ -54,6 +54,8 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 	/**
 	 * Canonical value held in cache to indicate no transaction attribute was
 	 * found for this method, and we don't need to look again.
+	 * 针对没有事务注解属性的方法进行事务注解属性缓存时使用的特殊值
+	 * 用于标记该方法没有事务注解属性
 	 */
 	@SuppressWarnings("serial")
 	private static final TransactionAttribute NULL_TRANSACTION_ATTRIBUTE = new DefaultTransactionAttribute() {
@@ -154,6 +156,8 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 	@Nullable
 	protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
 		// Don't allow no-public methods as required.
+		// 如果事务注解仅针对 public 方法，而当前方法不是 public，则直接返回 null
+		// 如果是 private，AOP 是能切入，代理对象也会生成的 但就是事务不回生效的
 		if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
 			return null;
 		}
@@ -161,6 +165,9 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 		// The method may be on an interface, but we need attributes from the target class.
 		// If the target class is null, the method will be unchanged.
 		// 获取目标类上的方法
+		// 因为Method并不一样属于目标类
+		// 所以这个方法就是获取targetClass上的那个和method对应的方法
+		// 也就是最终要执行的方法
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 
 		// First try is the method in the target class.

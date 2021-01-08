@@ -18,9 +18,11 @@ package org.springframework.cache.config;
 
 import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
 import org.springframework.cache.annotation.ProxyCachingConfiguration;
+import org.springframework.cache.interceptor.BeanFactoryCacheOperationSourceAdvisor;
 import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.context.annotation.AutoProxyRegistrar;
 import org.w3c.dom.Element;
+import org.springframework.cache.annotation.AnnotationCacheOperationSource;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -75,10 +77,14 @@ public class CacheNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 		/**
 		 * 解析 <cache:annotation-driven> 注解
-		 * @see org.springframework.cache.annotation.EnableCaching
 		 * @see InfrastructureAdvisorAutoProxyCreator
+		 * @see AnnotationCacheOperationSource
+		 * @see CacheInterceptor
+		 * @see BeanFactoryCacheOperationSourceAdvisor
+		 *
 		 * @see AutoProxyRegistrar
 		 * @see ProxyCachingConfiguration
+		 * @see org.springframework.cache.annotation.EnableCaching
 		 */
 		registerBeanDefinitionParser("annotation-driven", new AnnotationDrivenCacheBeanDefinitionParser());
 		/**

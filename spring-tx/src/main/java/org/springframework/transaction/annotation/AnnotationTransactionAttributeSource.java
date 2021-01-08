@@ -66,8 +66,15 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 		ejb3Present = ClassUtils.isPresent("javax.ejb.TransactionAttribute", classLoader);
 	}
 
+	/**
+	 * true：只处理 public 方法（基于 JDK 的代理  显然就只会处理这种方法）
+	 * false：private/protected 等方法都会处理.基于 AspectJ 代理得方式可议设置为 false
+	 * 默认情况下：会被赋值为 true，表示只处理 public 的方法
+	 */
 	private final boolean publicMethodsOnly;
-
+	/**
+	 * 保存用于分析事务注解的事务注解分析器
+	 */
 	private final Set<TransactionAnnotationParser> annotationParsers;
 
 
@@ -101,6 +108,7 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 				this.annotationParsers.add(new Ejb3TransactionAnnotationParser());
 			}
 		}
+		// 默认情况下，只添加Spring自己的注解解析器（绝大部分情况都实这里）
 		else {
 			this.annotationParsers = Collections.singleton(new SpringTransactionAnnotationParser());
 		}

@@ -28,6 +28,7 @@ import java.io.Flushable;
  * <p>Includes the {@link SavepointManager} interface to provide access
  * to savepoint management facilities. Note that savepoint management
  * is only available if supported by the underlying transaction manager.
+ * 代表一个事务的具体运行状态、以及还原点
  *
  * @author Juergen Hoeller
  * @since 27.03.2003
@@ -42,6 +43,7 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	 * Return whether the present transaction is new; otherwise participating
 	 * in an existing transaction, or potentially not running in an actual
 	 * transaction in the first place.
+	 * 是否是一个新的事务
 	 */
 	boolean isNewTransaction();
 
@@ -55,6 +57,8 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	 * @see #createSavepoint()
 	 * @see #rollbackToSavepoint(Object)
 	 * @see #releaseSavepoint(Object)
+	 * 是否有保存点
+	 * {@link TransactionDefinition#PROPAGATION_NESTED} 就是用 savepoint 来实现的
 	 */
 	boolean hasSavepoint();
 
@@ -74,6 +78,7 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	/**
 	 * Return whether the transaction has been marked as rollback-only
 	 * (either by the application or by the transaction infrastructure).
+	 * 是否为只回滚
 	 */
 	boolean isRollbackOnly();
 
@@ -91,6 +96,7 @@ public interface TransactionStatus extends SavepointManager, Flushable {
 	/**
 	 * Return whether this transaction is completed, that is,
 	 * whether it has already been committed or rolled back.
+	 * 当前事务是否已经完成
 	 * @see PlatformTransactionManager#commit
 	 * @see PlatformTransactionManager#rollback
 	 */
